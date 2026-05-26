@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Five-Layer Cake — Why AI Is Reshaping the Economy</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400;500&family=Outfit:wght@200;300;400;500;600&display=swap');
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  /* Matches the main slide deck */
+  --ink: #0f0e0c;
+  --paper: #f7f4ef;
+  --cream: #ede8e0;
+  --accent: #1e56c8;
+  --accent2: #2a6b8a;
+  --muted: #8a8278;
+
+  --serif: 'Cormorant Garamond', Georgia, serif;
+  --mono: 'DM Mono', monospace;
+  --sans: 'Outfit', sans-serif;
+
+  /* Aliases so existing class names still resolve */
+  --bg: var(--paper);
+  --surface: #ffffff;
+  --surface2: var(--cream);
+  --border: rgba(15,14,12,0.12);
+  --text: var(--ink);
+  --text-dim: var(--muted);
+  --text-faded: rgba(15,14,12,0.4);
+  --accent3: var(--accent2);
+
+  /* Layer borders: monochromatic ink → blue progression, no rainbow */
+  --layer-energy:  var(--ink);
+  --layer-silicon: #1a3a6b;
+  --layer-cloud:   #1e56c8;
+  --layer-models:  #4a7bd4;
+  --layer-apps:    #2a6b8a;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans), system-ui, sans-serif;
+  font-weight: 300;
+  line-height: 1.6;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* Background warmth — subtle paper texture, no nebulae */
+.nebula { display: none; }
+
+.container {
+  position: relative;
+  z-index: 1;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 80px 32px;
+}
+
+/* HEADER */
+.kicker {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  padding: 4px 12px;
+  border: 1px solid rgba(30,86,200,0.4);
+  border-radius: 999px;
+  margin-bottom: 1.5rem;
+}
+
+h1 {
+  font-family: var(--serif);
+  font-size: clamp(2.4rem, 5.5vw, 4.2rem);
+  font-weight: 300;
+  line-height: 1.02;
+  letter-spacing: -0.025em;
+  margin-bottom: 1rem;
+}
+
+h1 em {
+  font-style: italic;
+  font-weight: 400;
+  color: var(--accent);
+}
+
+.subhead {
+  font-size: 1.1rem;
+  color: var(--text-dim);
+  line-height: 1.65;
+  max-width: 760px;
+  margin-bottom: 1rem;
+}
+
+.subhead strong { color: var(--text); font-weight: 500; }
+
+/* HEADLINE STATS BLOCK */
+.stats-row {
+  margin-top: 3rem;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.stat-cell {
+  background: var(--surface);
+  padding: 1.75rem 1.5rem;
+}
+
+.stat-num {
+  font-family: var(--sans), sans-serif;
+  font-size: 2.4rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--accent);
+  line-height: 1;
+  margin-bottom: 0.4rem;
+}
+
+.stat-label {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.stat-detail {
+  font-size: 0.82rem;
+  color: var(--text-dim);
+  line-height: 1.55;
+}
+
+.stat-detail strong { color: var(--text); font-weight: 500; }
+
+/* SECTION HEADERS */
+.section-header {
+  margin-top: 5rem;
+  margin-bottom: 2rem;
+}
+
+.section-header .eyebrow {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent2);
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.section-header .eyebrow::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, rgba(42,107,138,0.35), transparent);
+}
+
+h2 {
+  font-family: var(--serif);
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  font-weight: 300;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin-bottom: 1rem;
+}
+
+h2 em {
+  font-style: italic;
+  font-weight: 400;
+  color: var(--accent);
+}
+
+.section-lead {
+  font-size: 1rem;
+  color: var(--text-dim);
+  line-height: 1.65;
+  max-width: 760px;
+}
+
+/* THE CAKE */
+.cake {
+  margin-top: 2.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.layer {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.4rem 1.5rem;
+  display: grid;
+  grid-template-columns: 100px 1fr 1.6fr 180px;
+  gap: 1.5rem;
+  align-items: center;
+  position: relative;
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.layer:hover {
+  border-color: rgba(15,14,12,0.25);
+  transform: translateX(2px);
+  box-shadow: 0 2px 12px rgba(15,14,12,0.06);
+}
+
+.layer-num {
+  font-family: var(--serif);
+  font-size: 3rem;
+  font-weight: 300;
+  font-style: italic;
+  line-height: 1;
+  text-align: center;
+  opacity: 0.6;
+}
+
+.layer-name {
+  font-family: var(--serif);
+  font-size: 1.5rem;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+}
+
+.layer-name .layer-tag {
+  display: block;
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 500;
+  margin-bottom: 0.4rem;
+}
+
+.layer-desc {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--text-dim);
+}
+
+.layer-desc strong { color: var(--text); font-weight: 500; }
+
+.layer-players {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.layer-players .players-label {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-faded);
+  margin-bottom: 0.15rem;
+}
+
+.layer-players .player-list {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
+/* Layer-specific accent borders */
+.layer.l5 { border-left: 4px solid var(--layer-apps); }
+.layer.l5 .layer-tag, .layer.l5 .layer-num { color: var(--layer-apps); }
+
+.layer.l4 { border-left: 4px solid var(--layer-models); }
+.layer.l4 .layer-tag, .layer.l4 .layer-num { color: var(--layer-models); }
+
+.layer.l3 { border-left: 4px solid var(--layer-cloud); }
+.layer.l3 .layer-tag, .layer.l3 .layer-num { color: var(--layer-cloud); }
+
+.layer.l2 { border-left: 4px solid var(--layer-silicon); }
+.layer.l2 .layer-tag, .layer.l2 .layer-num { color: var(--layer-silicon); }
+
+.layer.l1 { border-left: 4px solid var(--layer-energy); }
+.layer.l1 .layer-tag, .layer.l1 .layer-num { color: var(--layer-energy); }
+
+/* MAGNIFICENT 7 BLOCK */
+.mag7 {
+  margin-top: 4rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 2.5rem;
+}
+
+.mag7-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.mag7-title {
+  font-family: var(--serif);
+  font-size: 1.6rem;
+  font-weight: 400;
+}
+
+.mag7-title em { font-style: italic; color: var(--accent); }
+
+.mag7-spend {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.mag7-spend strong {
+  font-family: var(--sans), sans-serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  margin-right: 0.4rem;
+}
+
+.mag7-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.75rem;
+}
+
+.mag7-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.85rem 0.6rem;
+  text-align: center;
+  transition: transform 0.2s;
+}
+
+.mag7-card:hover { transform: translateY(-2px); }
+
+.mag7-name {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 0.2rem;
+}
+
+.mag7-ticker {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  color: var(--text-faded);
+}
+
+.mag7-note {
+  margin-top: 1.5rem;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  line-height: 1.65;
+  max-width: 760px;
+}
+
+.mag7-note em { color: var(--accent); font-style: italic; }
+
+/* SOURCES */
+.sources {
+  margin-top: 4rem;
+  padding: 2.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+}
+
+.sources-header { margin-bottom: 2rem; }
+
+.sources-label {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent2);
+  margin-bottom: 0.75rem;
+}
+
+.sources-note {
+  font-size: 0.92rem;
+  line-height: 1.65;
+  color: var(--text-dim);
+  max-width: 760px;
+}
+
+.sources-note em { color: var(--text); font-style: italic; }
+
+.source-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border-top: 1px solid var(--border);
+}
+
+.source-row {
+  display: grid;
+  grid-template-columns: 1fr 1.6fr;
+  gap: 2rem;
+  padding: 1.15rem 0;
+  border-bottom: 1px solid var(--border);
+  align-items: baseline;
+}
+
+.source-claim {
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--text);
+}
+
+.source-claim strong { color: var(--text); font-weight: 500; }
+
+.source-attr {
+  font-size: 0.82rem;
+  line-height: 1.65;
+  color: var(--text-dim);
+}
+
+.source-attr a {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(30,86,200,0.4);
+  transition: border-color 0.2s;
+}
+
+.source-attr a:hover { border-color: var(--accent); }
+
+.source-attr em { color: var(--text); font-style: italic; }
+
+.sources-disclaimer {
+  margin-top: 1.5rem;
+  font-size: 0.82rem;
+  line-height: 1.65;
+  color: var(--text-faded);
+  max-width: 780px;
+  font-style: italic;
+}
+
+.sources-disclaimer strong { color: var(--accent); font-style: normal; font-weight: 500; }
+
+.sources-disclaimer em { color: var(--text-dim); }
+
+@media (max-width: 800px) {
+  .source-row { grid-template-columns: 1fr; gap: 0.5rem; }
+}
+
+/* CLOSING CALLOUT */
+.closing {
+  margin-top: 4rem;
+  padding: 2.5rem 2.5rem;
+  background: linear-gradient(135deg, rgba(30,86,200,0.06), rgba(42,107,138,0.05));
+  border: 1px solid rgba(30,86,200,0.3);
+  border-radius: 16px;
+}
+
+.closing-label {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 1rem;
+}
+
+.closing-quote {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 1.5rem;
+  line-height: 1.4;
+  color: var(--text);
+  max-width: 780px;
+}
+
+.closing-quote strong { font-weight: 500; color: var(--accent); }
+
+/* MOBILE */
+@media (max-width: 800px) {
+  .container { padding: 48px 20px; }
+  .stats-row { grid-template-columns: 1fr; }
+  .layer {
+    grid-template-columns: 60px 1fr;
+    gap: 1rem;
+    grid-template-areas:
+      "num name"
+      "desc desc"
+      "players players";
+  }
+  .layer-num { grid-area: num; font-size: 2rem; }
+  .layer-name { grid-area: name; }
+  .layer-desc { grid-area: desc; }
+  .layer-players { grid-area: players; }
+  .mag7-grid { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<div class="nebula" id="neb1"></div>
+<div class="nebula" id="neb2"></div>
+<div class="nebula" id="neb3"></div>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <span class="kicker">The exponential acceleration</span>
+  <h1>The <em>five-layer cake</em><br>powering modern AI.</h1>
+  <p class="subhead">
+    To understand why AI is the biggest investment story of our time, look at the <strong>stack of things it depends on</strong>. Every conversation you have with Claude touches all five layers — and every layer is being rebuilt at the same time. That's the acceleration.
+  </p>
+
+  <!-- HEADLINE STATS -->
+  <div class="stats-row">
+    <div class="stat-cell">
+      <div class="stat-label">US GDP Growth · 2026</div>
+      <div class="stat-num">~50%</div>
+      <div class="stat-detail">of US GDP growth in 2026 is projected to come from <strong>AI investment</strong>.</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-label">Magnificent 7 · 2026 capex</div>
+      <div class="stat-num">$700B</div>
+      <div class="stat-detail">Apple, Microsoft, Alphabet, Amazon, Meta, Nvidia, and Tesla — <strong>combined capital spend</strong>, mostly on AI infrastructure.</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-label">The pace</div>
+      <div class="stat-num">→</div>
+      <div class="stat-detail">More major AI milestones in the past 6 years than in the <strong>70 years before that combined</strong>.</div>
+    </div>
+  </div>
+
+  <!-- THE CAKE -->
+  <div class="section-header">
+    <div class="eyebrow">Bottom to top · The AI stack</div>
+    <h2>Five layers being<br><em>rebuilt simultaneously.</em></h2>
+    <p class="section-lead">When people ask why AI feels so much faster than the internet did — it's because the internet only had to rebuild <em>one</em> layer at a time. AI is rebuilding all five at once.</p>
+  </div>
+
+  <div class="cake">
+
+    <!-- TOP: Applications -->
+    <div class="layer l5">
+      <div class="layer-num">05</div>
+      <div class="layer-name">
+        <span class="layer-tag">The icing</span>
+        Applications
+      </div>
+      <div class="layer-desc">What you actually <strong>see and use</strong> — the apps built on top of foundation models. The fastest-growing layer by headcount; thousands of new companies a year.</div>
+      <div class="layer-players">
+        <span class="players-label">Who's here</span>
+        <span class="player-list">Cursor · Perplexity · Harvey · MagicSchool · Granola · Lovable · 90,000+ more</span>
+      </div>
+    </div>
+
+    <!-- Foundation Models -->
+    <div class="layer l4">
+      <div class="layer-num">04</div>
+      <div class="layer-name">
+        <span class="layer-tag">The cake</span>
+        Foundation Models
+      </div>
+      <div class="layer-desc">The <strong>intelligence layer</strong>. Frontier LLMs trained on internet-scale data. A handful of labs; each training run now costs more than building a skyscraper.</div>
+      <div class="layer-players">
+        <span class="players-label">Who's here</span>
+        <span class="player-list">Anthropic · OpenAI · Google DeepMind · Meta · xAI · Mistral · DeepSeek</span>
+      </div>
+    </div>
+
+    <!-- Data Centers -->
+    <div class="layer l3">
+      <div class="layer-num">03</div>
+      <div class="layer-name">
+        <span class="layer-tag">The plate</span>
+        Data Centers &amp; Cloud
+      </div>
+      <div class="layer-desc">Where the compute physically lives. <strong>Hyperscaler capex is at all-time highs</strong> — Microsoft, Google, and Amazon are racing to build out enough capacity for the next training run.</div>
+      <div class="layer-players">
+        <span class="players-label">Who's here</span>
+        <span class="player-list">Microsoft Azure · AWS · Google Cloud · CoreWeave · Lambda · Oracle Cloud</span>
+      </div>
+    </div>
+
+    <!-- Silicon -->
+    <div class="layer l2">
+      <div class="layer-num">02</div>
+      <div class="layer-name">
+        <span class="layer-tag">The pan</span>
+        Silicon &amp; Chips
+      </div>
+      <div class="layer-desc">The processors AI actually <em>runs on</em>. <strong>Nvidia's market cap is larger than the GDP of most countries</strong>. TSMC fabs every advanced chip the world depends on.</div>
+      <div class="layer-players">
+        <span class="players-label">Who's here</span>
+        <span class="player-list">Nvidia · TSMC · AMD · Broadcom · ASML · Intel · custom silicon (Apple, Google TPU, AWS Trainium)</span>
+      </div>
+    </div>
+
+    <!-- BOTTOM: Energy -->
+    <div class="layer l1">
+      <div class="layer-num">01</div>
+      <div class="layer-name">
+        <span class="layer-tag">The oven</span>
+        Energy &amp; Grid
+      </div>
+      <div class="layer-desc">The electricity to <em>run all of it</em>. <strong>AI is now the largest new electricity demand in the developed world</strong>. Microsoft is restarting Three Mile Island. Nuclear, gas, and renewables are all being scaled up for AI.</div>
+      <div class="layer-players">
+        <span class="players-label">Who's here</span>
+        <span class="player-list">Constellation · Vistra · NextEra · GE Vernova · utility-scale solar &amp; nuclear restarts</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- MAGNIFICENT 7 -->
+  <div class="mag7">
+    <div class="mag7-header">
+      <div class="mag7-title">The <em>Magnificent 7</em> are pouring concrete in every layer.</div>
+      <div class="mag7-spend"><strong>$700B</strong> · combined 2026 capex</div>
+    </div>
+    <div class="mag7-grid">
+      <div class="mag7-card"><div class="mag7-name">Apple</div><div class="mag7-ticker">AAPL</div></div>
+      <div class="mag7-card"><div class="mag7-name">Microsoft</div><div class="mag7-ticker">MSFT</div></div>
+      <div class="mag7-card"><div class="mag7-name">Alphabet</div><div class="mag7-ticker">GOOGL</div></div>
+      <div class="mag7-card"><div class="mag7-name">Amazon</div><div class="mag7-ticker">AMZN</div></div>
+      <div class="mag7-card"><div class="mag7-name">Meta</div><div class="mag7-ticker">META</div></div>
+      <div class="mag7-card"><div class="mag7-name">Nvidia</div><div class="mag7-ticker">NVDA</div></div>
+      <div class="mag7-card"><div class="mag7-name">Tesla</div><div class="mag7-ticker">TSLA</div></div>
+    </div>
+    <p class="mag7-note">
+      Microsoft is paying to restart a nuclear plant. Amazon is co-locating data centers next to power plants. Nvidia ships chips faster than TSMC can fab them. Meta is building data centers the size of Manhattan. <em>This is what $700 billion in one year looks like.</em>
+    </p>
+  </div>
+
+  <!-- SOURCES -->
+  <div class="sources">
+    <div class="sources-header">
+      <div class="sources-label">Where these numbers come from</div>
+      <p class="sources-note">Most of what's on this page is projection or estimate — not settled fact. Different analysts give different numbers depending on what they count and how. Here's the receipt for each major claim, so you can argue with the methodology, not the messenger.</p>
+    </div>
+
+    <div class="source-list">
+
+      <div class="source-row">
+        <div class="source-claim"><strong>~50% of US GDP growth in 2026 from AI investment.</strong></div>
+        <div class="source-attr">
+          Renaissance Macro Research (Neil Dutta) tracking AI capex's contribution to US growth — widely reported through Bloomberg, FT, and Joe Weisenthal's <em>Odd Lots</em> coverage. Goldman Sachs and BofA have published similar (slightly lower) estimates.
+        </div>
+      </div>
+
+      <div class="source-row">
+        <div class="source-claim"><strong>$700B Magnificent 7 combined 2026 capex.</strong></div>
+        <div class="source-attr">
+          High-end projection from Bloomberg Intelligence and Morgan Stanley aggregating company guidance + analyst models. Conservative estimates land closer to $500–600B; the $700B figure assumes hyperscaler capex grows ~40% YoY and Apple/Tesla/Nvidia hold steady. 2025 confirmed hyperscaler capex (AMZN+GOOGL+META+MSFT) is ~$330B.
+        </div>
+      </div>
+
+      <div class="source-row">
+        <div class="source-claim"><strong>AI is the largest new electricity demand in the developed world.</strong></div>
+        <div class="source-attr">
+          <a href="https://www.iea.org/reports/electricity-2024" target="_blank" rel="noopener">IEA Electricity 2024</a> report on data center demand growth, plus Goldman Sachs <em>"Generational Growth: AI, Data Centers and the Coming US Power Demand Surge"</em> (April 2024).
+        </div>
+      </div>
+
+      <div class="source-row">
+        <div class="source-claim"><strong>Microsoft restarting Three Mile Island.</strong></div>
+        <div class="source-attr">
+          <a href="https://www.constellationenergy.com/newsroom/2024/Constellation-to-Launch-Crane-Clean-Energy-Center-Restoring-Jobs-and-Carbon-Free-Power-to-The-Grid.html" target="_blank" rel="noopener">Constellation Energy press release, Sept 20, 2024</a>. 20-year PPA between Microsoft and the restarted Unit 1 reactor.
+        </div>
+      </div>
+
+      <div class="source-row">
+        <div class="source-claim"><strong>Foundation model training costs.</strong></div>
+        <div class="source-attr">
+          Dario Amodei (Anthropic CEO) on training runs trending toward $1B+ — <em>In Good Company</em> podcast (2024) and his <a href="https://darioamodei.com/machines-of-loving-grace" target="_blank" rel="noopener">"Machines of Loving Grace"</a> essay. GPT-4 was reported at ~$100M; Gemini Ultra estimated at ~$190M (Stanford AI Index 2024).
+        </div>
+      </div>
+
+      <div class="source-row">
+        <div class="source-claim"><strong>"More milestones in 6 years than the prior 70 combined."</strong></div>
+        <div class="source-attr">
+          Pulled directly from the event counts in this workshop's <a href="ai-timeline.html" target="_blank" rel="noopener">AI Timeline</a> — 26 events 1950–2019, 81+ events 2020–present. Methodology: notable model releases, infrastructure shifts, and regulatory milestones tracked in the timeline dataset.
+        </div>
+      </div>
+
+      <div class="source-row">
+        <div class="source-claim"><strong>Nvidia / TSMC dominance.</strong></div>
+        <div class="source-attr">
+          Nvidia market cap surpassed $4T in 2025 (real-time via any market tracker). TSMC fabricates an estimated 90%+ of advanced-node (≤7nm) chips globally — Boston Consulting Group / SIA semiconductor reports.
+        </div>
+      </div>
+
+    </div>
+
+    <p class="sources-disclaimer">
+      Every number here was current as of <strong>May 2026</strong>. Projections shift quarterly. The point of this page isn't the exact figures — it's the <em>shape</em> of what's happening: five layers, all moving at once, with capital allocation unlike anything since the build-out of the railroads or electric grid.
+    </p>
+  </div>
+
+  <!-- CLOSING -->
+  <div class="closing">
+    <div class="closing-label">The story in one line</div>
+    <div class="closing-quote">
+      Every dollar you spend on Claude — or any AI tool — <strong>touches all five layers</strong>. That's why the acceleration is exponential, not linear: every layer makes the layer above it faster, cheaper, and more capable, at the same time.
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

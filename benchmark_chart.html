@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Benchmark Tracker: What Actually Matters</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400;500&family=Outfit:wght@200;300;400;500;600;700&display=swap');
+
+:root {
+  /* Matches the main slide deck */
+  --ink: #0f0e0c;
+  --paper: #f7f4ef;
+  --cream: #ede8e0;
+  --accent: #1e56c8;
+  --accent2: #2a6b8a;
+  --muted: #8a8278;
+
+  --serif: 'Cormorant Garamond', Georgia, serif;
+  --mono: 'DM Mono', monospace;
+  --sans: 'Outfit', sans-serif;
+
+  /* Aliases for existing class names */
+  --bg: var(--paper);
+  --surface: #ffffff;
+  --surface2: var(--cream);
+  --border: rgba(15,14,12,0.12);
+  --border2: rgba(15,14,12,0.22);
+  --text: var(--ink);
+  --dim: rgba(15,14,12,0.5);
+
+  /* Semantic data colors (kept varied so open vs closed reads as a real distinction) */
+  --closed: var(--accent);              /* closed-source models — deck blue */
+  --closed-glow: rgba(30,86,200,0.10);
+  --open: #2a6b8a;                      /* open-source models — deck accent2 teal-blue */
+  --open-glow: rgba(42,107,138,0.10);
+  --human: rgba(15,14,12,0.55);         /* human baseline — neutral ink */
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans), sans-serif;
+  min-height: 100vh;
+  padding: 36px 24px 60px;
+}
+
+.page { max-width: 1020px; margin: 0 auto; }
+
+/* ── Header ── */
+.masthead {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 32px;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.masthead-left {}
+
+.kicker {
+  font-family: var(--serif);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+
+h1 {
+  font-family: var(--serif);
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #0f0e0c;
+  max-width: 520px;
+}
+
+.subhead-wrap {
+  position: relative;
+  display: inline-block;
+  max-width: 520px;
+}
+.subhead {
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 400;
+  line-height: 1.6;
+  cursor: help;
+  border-bottom: 1px dotted transparent;
+  display: inline;
+}
+.subhead-wrap:hover .subhead { border-bottom-color: var(--border2); }
+.info-dot {
+  display: inline-block;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  color: var(--muted);
+  font-size: 9.5px;
+  font-weight: 600;
+  text-align: center;
+  line-height: 13px;
+  margin-left: 4px;
+  vertical-align: 1px;
+  font-family: var(--serif);
+  transition: all 0.15s;
+}
+.subhead-wrap:hover .info-dot {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+.subhead-tip {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  width: 440px;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.10);
+  padding: 16px 18px;
+  font-size: 12.5px;
+  color: var(--text);
+  line-height: 1.6;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-4px);
+  transition: opacity 0.15s, transform 0.15s;
+  z-index: 50;
+}
+.subhead-wrap:hover .subhead-tip {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+.subhead-tip h4 {
+  font-family: var(--serif);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+.subhead-tip p { margin-bottom: 10px; color: var(--muted); }
+.subhead-tip p:last-child { margin-bottom: 0; }
+.subhead-tip strong { color: var(--text); font-weight: 500; }
+.subhead-tip ul { margin: 6px 0 10px 14px; color: var(--muted); }
+.subhead-tip li { margin-bottom: 4px; }
+
+.legend {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 4px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.ld { width: 9px; height: 9px; border-radius: 50%; }
+.ld.closed { background: var(--closed); }
+.ld.open   { background: var(--open); }
+.ld.human  { background: var(--human); border-radius: 0; width: 20px; height: 2px; }
+
+/* ── Tabs ── */
+.tabs {
+  display: flex;
+  gap: 2px;
+  margin-bottom: 2px;
+}
+
+.tab {
+  padding: 10px 20px;
+  font-family: var(--serif);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.tab:hover { color: var(--text); background: #e4e9f0; }
+
+.tab.active {
+  color: var(--text);
+  background: var(--surface);
+  border-color: var(--border2);
+  border-bottom: 1px solid var(--surface);
+  margin-bottom: -1px;
+  z-index: 2;
+}
+
+/* ── Chart panel ── */
+.panel {
+  display: none;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 0 8px 8px 8px;
+  padding: 32px 56px 48px 60px;
+  position: relative;
+}
+
+.panel.active { display: block; }
+
+svg { overflow: visible; display: block; }
+
+/* ── Benchmark explainer card ── */
+.bench-card {
+  margin-top: 20px;
+  padding: 16px 20px;
+  background: #ede8e0;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 6px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 20px;
+}
+
+.bench-what {}
+.bench-what h3 {
+  font-family: var(--serif);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 7px;
+}
+.bench-what p {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.65;
+  font-weight: 400;
+}
+.bench-what p strong { color: var(--text); font-weight: 500; }
+
+.bench-stats {
+  grid-column: 2 / 4;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.bstat {
+  background: #ede8e0;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 10px 12px;
+}
+.bstat-val {
+  font-family: var(--serif);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.bstat-label {
+  font-size: 10.5px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+/* ── Footnotes ── */
+.footnotes {
+  margin-top: 18px;
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  font-family: var(--serif);
+  font-size: 9.5px;
+  letter-spacing: 0.06em;
+  color: var(--dim);
+}
+
+/* ── Tooltip ── */
+/* ── Sources ── */
+.sources {
+  margin-top: 28px;
+  padding: 20px 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.sources h3 {
+  font-family: var(--serif);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 12px;
+}
+.sources-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px 24px;
+}
+.sources-grid a {
+  font-size: 11.5px;
+  color: var(--muted);
+  text-decoration: none;
+  line-height: 1.5;
+  border-bottom: 1px dotted transparent;
+  transition: color 0.15s, border-color 0.15s;
+}
+.sources-grid a:hover {
+  color: var(--closed);
+  border-bottom-color: var(--closed);
+}
+.sources-grid a::before {
+  content: '↗ ';
+  color: var(--dim);
+  margin-right: 2px;
+}
+.sources-cat {
+  font-family: var(--serif);
+  font-size: 9.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-top: 10px;
+  margin-bottom: 4px;
+  grid-column: 1 / -1;
+}
+.sources-cat:first-child { margin-top: 0; }
+
+/* ── Info tooltip (for rich hover content inside SVG) ── */
+.info-tip {
+  position: fixed;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.12);
+  padding: 14px 16px;
+  font-size: 12px;
+  color: var(--text);
+  line-height: 1.55;
+  width: 320px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+  z-index: 200;
+}
+.info-tip.on { opacity: 1; }
+.info-tip h4 {
+  font-family: var(--serif);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+.info-tip p { margin-bottom: 8px; color: var(--muted); }
+.info-tip p:last-child { margin-bottom: 0; }
+.info-tip strong { color: var(--text); font-weight: 500; }
+.info-tip .ex {
+  background: rgba(15,14,12,0.05);
+  border-left: 2px solid var(--accent);
+  padding: 6px 10px;
+  margin: 8px 0;
+  font-size: 11.5px;
+  color: #0f0e0c;
+}
+
+.tooltip {
+  position: fixed;
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border2);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 12px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.12s;
+  z-index: 100;
+  white-space: nowrap;
+  color: var(--text);
+}
+.tooltip.on { opacity: 1; }
+.tt-name { font-family: var(--serif); font-weight: 600; font-size: 13px; margin-bottom: 3px; }
+.tt-meta { color: var(--muted); font-size: 11px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="masthead">
+    <div class="masthead-left">
+      <div class="kicker">AI Model Performance Tracker · Apr 2022 – May 2026</div>
+      <h1>Beyond MMLU: benchmarks that actually differentiate models</h1>
+      <span class="subhead-wrap">
+        <p class="subhead">Every frontier model scores 88–94% on MMLU, so it no longer differentiates them. These three benchmarks still do — revealing real gaps in coding, science, and expert-level reasoning.<span class="info-dot">i</span></p>
+        <div class="subhead-tip">
+          <h4>What this means</h4>
+          <p><strong>"Saturated"</strong> means every frontier model clusters at 88–94% on MMLU — the scores are so close that you can't tell which model is actually better.</p>
+          <p><strong>The three tabs above measure what still differentiates models:</strong></p>
+          <ul>
+            <li><strong>SWE-bench</strong> — can the model fix real GitHub bugs?</li>
+            <li><strong>GPQA Diamond</strong> — can it answer PhD-level science questions?</li>
+            <li><strong>HLE</strong> — can it answer the hardest expert-level questions across 100+ subjects?</li>
+          </ul>
+          <p>On these, models are <em>not</em> bunched at the top. Top HLE score: 64.7%. Bottom: 2.7%. That spread is why these benchmarks still matter.</p>
+        </div>
+      </span>
+    </div>
+    <div class="legend">
+      <div class="legend-item"><div class="ld closed"></div> Closed source</div>
+      <div class="legend-item"><div class="ld open"></div> Open source / open weight</div>
+      <div class="legend-item"><div class="ld human"></div> Human expert baseline</div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('swe')">SWE-bench Verified</div>
+    <div class="tab" onclick="switchTab('gpqa')">GPQA Diamond</div>
+    <div class="tab" onclick="switchTab('mmlu')">MMLU (2022–2026)</div>
+    <div class="tab" onclick="switchTab('hle')">Humanity's Last Exam ★</div>
+  </div>
+
+  <!-- ══ SWE-bench Panel ══ -->
+  <div class="panel active" id="panel-swe">
+    <svg id="svg-swe" width="900" height="420"></svg>
+    <div class="bench-card">
+      <div class="bench-what">
+        <h3>What is SWE-bench?</h3>
+        <p><strong>Software Engineering Benchmark</strong> — real GitHub issues from popular Python repos (Django, Flask, scikit-learn). The model must read the issue, navigate a large codebase, find the bug, and write a patch that passes all tests. No hand-holding. No explicit pointer to the broken file.</p>
+        <p style="margin-top:8px">This is the benchmark that matters for <strong>developers</strong>. It measures whether a model can do actual engineering work — not just answer questions about it.</p>
+      </div>
+      <div class="bench-stats">
+        <div class="bstat"><div class="bstat-val">500</div><div class="bstat-label">Human-validated GitHub issues (Verified subset)</div></div>
+        <div class="bstat"><div class="bstat-val">0%</div><div class="bstat-label">Baseline for early models — GPT-4 solved virtually none</div></div>
+        <div class="bstat"><div class="bstat-val">93.9%</div><div class="bstat-label">Claude Mythos Preview — current leader (May 2026); Opus 4.7 at 87.6%</div></div>
+        <div class="bstat"><div class="bstat-val">⚠︎</div><div class="bstat-label">Contamination risk: models may have seen answers in training</div></div>
+        <div class="bstat"><div class="bstat-val">Pro</div><div class="bstat-label">SWE-bench Pro (1,865 tasks) is the contamination-resistant successor</div></div>
+        <div class="bstat"><div class="bstat-val">2023</div><div class="bstat-label">Released by Princeton + U. Chicago researchers</div></div>
+      </div>
+    </div>
+    <div class="footnotes">
+      <span>● Scores from official SWE-bench leaderboard, vals.ai, and model provider reports</span>
+      <span>● Scaffold matters: same model scores vary 5–15% depending on tooling used</span>
+      <span>● SWE-bench Pro scores ~20pts lower than Verified due to harder, cleaner tasks</span>
+    </div>
+  </div>
+
+  <!-- ══ GPQA Panel ══ -->
+  <div class="panel" id="panel-gpqa">
+    <svg id="svg-gpqa" width="900" height="420"></svg>
+    <div class="bench-card">
+      <div class="bench-what">
+        <h3>What is GPQA Diamond?</h3>
+        <p><strong>Graduate-Level Google-Proof Q&A</strong> — 198 multiple-choice questions in biology, chemistry, and physics written by PhD experts. They're specifically designed so that <strong>skilled non-experts can't Google the answer</strong>, even with 30 minutes and unrestricted web access.</p>
+        <p style="margin-top:8px">Tests genuine scientific reasoning, not recall. The questions require you to <em>think like a domain expert</em>. Human PhD specialists score ~65%.</p>
+      </div>
+      <div class="bench-stats">
+        <div class="bstat"><div class="bstat-val">198</div><div class="bstat-label">Questions in the Diamond (highest quality) subset</div></div>
+        <div class="bstat"><div class="bstat-val">25%</div><div class="bstat-label">Random guessing baseline (4-choice multiple choice)</div></div>
+        <div class="bstat"><div class="bstat-val">~65%</div><div class="bstat-label">Human PhD expert accuracy in their own field</div></div>
+        <div class="bstat"><div class="bstat-val">~39%</div><div class="bstat-label">GPT-4's score at launch — well below PhD level</div></div>
+        <div class="bstat"><div class="bstat-val">~94%</div><div class="bstat-label">Gemini 3.1 Pro — current frontier, far above human experts</div></div>
+        <div class="bstat"><div class="bstat-val">2023</div><div class="bstat-label">Released by Rein et al. at NYU and Anthropic</div></div>
+      </div>
+    </div>
+    <div class="footnotes">
+      <span>● Scores from Epoch AI, Artificial Analysis, intuitionlabs.ai, and model provider reports</span>
+      <span>● ~65% = PhD expert human baseline · ~34% = skilled non-expert baseline</span>
+      <span>● Now approaching saturation at the frontier — top models cluster 91–94%</span>
+    </div>
+  </div>
+
+  <!-- ══ MMLU Panel ══ -->
+  <div class="panel" id="panel-mmlu">
+    <svg id="svg-mmlu" width="900" height="420"></svg>
+    <div class="bench-card">
+      <div class="bench-what">
+        <h3>What is MMLU?</h3>
+        <p><strong>Massive Multitask Language Understanding</strong> — 15,908 multiple-choice questions across 57 subjects, from high school biology to professional law to college physics. Models are shown 5 example Q&amp;A pairs then must answer without any specialized training on those questions.</p>
+        <p style="margin-top:8px">Once the gold standard for comparing models. Now <strong>saturated</strong> — frontier models all cluster at 88–94%, making it useless as a differentiator. The field has moved on.</p>
+      </div>
+      <div class="bench-stats">
+        <div class="bstat"><div class="bstat-val">57</div><div class="bstat-label">Academic &amp; professional subjects tested</div></div>
+        <div class="bstat"><div class="bstat-val">15.9K</div><div class="bstat-label">Multiple-choice questions total</div></div>
+        <div class="bstat"><div class="bstat-val">5-shot</div><div class="bstat-label">Format: 5 example Q&amp;As shown before each question</div></div>
+        <div class="bstat"><div class="bstat-val">~25%</div><div class="bstat-label">Random guessing baseline (4 answer choices)</div></div>
+        <div class="bstat"><div class="bstat-val">~89%</div><div class="bstat-label">Human expert-level ceiling — frontier models now exceed this</div></div>
+        <div class="bstat"><div class="bstat-val">2020</div><div class="bstat-label">Released by Dan Hendrycks et al., UC Berkeley</div></div>
+      </div>
+    </div>
+    <div class="footnotes">
+      <span>● Scores reflect 5-shot MMLU as reported by model authors or major third-party evals</span>
+      <span>● Methodology-sensitive: scores vary ±3–5% depending on prompting approach</span>
+      <span>● Saturated by 2025 — top models 88–94%, benchmark retired by most leaderboards</span>
+    </div>
+  </div>
+
+  <!-- ══ HLE Panel ══ -->
+  <div class="panel" id="panel-hle">
+    <svg id="svg-hle" width="900" height="460"></svg>
+    <div class="bench-card">
+      <div class="bench-what">
+        <h3>What is Humanity's Last Exam?</h3>
+        <p><strong>HLE</strong> was created by the Center for AI Safety + Scale AI specifically because MMLU and GPQA were getting too easy. It has <strong>2,500 graduate-level questions</strong> across 100+ subjects — math, chemistry, history, law, philosophy — crowdsourced from ~1,000 PhD experts across 50 countries. Questions are specifically designed to be <strong>un-Googleable</strong>.</p>
+        <p style="margin-top:8px">The chart above shows the steepest climb in benchmark history: from <strong>~3% in Jan 2025</strong> to <strong>64.7%</strong> for Claude Mythos (limited access) — but human experts still score ~90%, and the gap remains vast.</p>
+      </div>
+      <div class="bench-stats">
+        <div class="bstat"><div class="bstat-val">2,500</div><div class="bstat-label">Expert-crafted graduate-level questions, all with unambiguous answers</div></div>
+        <div class="bstat"><div class="bstat-val">100+</div><div class="bstat-label">Subjects covered — from topology to Palmyrene epigraphy</div></div>
+        <div class="bstat"><div class="bstat-val">~90%</div><div class="bstat-label">Human expert accuracy in their own domain</div></div>
+        <div class="bstat"><div class="bstat-val">2.7%</div><div class="bstat-label">GPT-4o's score at launch — Jan 2025</div></div>
+        <div class="bstat"><div class="bstat-val">64.7%</div><div class="bstat-label">Claude Mythos Preview — current record (limited access model)</div></div>
+        <div class="bstat"><div class="bstat-val">34–89%</div><div class="bstat-label">Calibration error range — models are severely overconfident in wrong answers</div></div>
+      </div>
+    </div>
+    <div class="footnotes">
+      <span>● Scores from Scale AI official leaderboard, Artificial Analysis, and pricepertoken.com</span>
+      <span>● ⚠ FutureHouse (Jul 2025) flagged ~29% of chemistry/biology answers as potentially incorrect — benchmark under revision</span>
+      <span>● Claude Mythos Preview is a limited-access model not publicly available via standard API</span>
+      <span>● Published in Nature, Jan 2026 (vol. 649)</span>
+    </div>
+  </div>
+
+  <!-- ══ Sources ══ -->
+  <div class="sources">
+    <h3>Sources &amp; References</h3>
+    <div class="sources-grid">
+      <div class="sources-cat">Leaderboards</div>
+      <a href="https://www.swebench.com/" target="_blank" rel="noopener">SWE-bench official leaderboard</a>
+      <a href="https://agi.safe.ai/" target="_blank" rel="noopener">Humanity's Last Exam (CAIS + Scale)</a>
+      <a href="https://artificialanalysis.ai/evaluations/humanitys-last-exam" target="_blank" rel="noopener">Artificial Analysis — HLE</a>
+      <a href="https://artificialanalysis.ai/evaluations/gpqa-diamond" target="_blank" rel="noopener">Artificial Analysis — GPQA Diamond</a>
+      <a href="https://epoch.ai/benchmarks/gpqa-diamond" target="_blank" rel="noopener">Epoch AI — GPQA Diamond</a>
+      <a href="https://epoch.ai/benchmarks/hle" target="_blank" rel="noopener">Epoch AI — HLE</a>
+      <a href="https://llm-stats.com/benchmarks/swe-bench-verified" target="_blank" rel="noopener">llm-stats — SWE-bench Verified</a>
+      <a href="https://pricepertoken.com/leaderboards/benchmark/hle" target="_blank" rel="noopener">pricepertoken — HLE leaderboard</a>
+      <a href="https://www.vals.ai/benchmarks/swebench" target="_blank" rel="noopener">vals.ai — SWE-bench</a>
+      <a href="https://www.vellum.ai/llm-leaderboard" target="_blank" rel="noopener">Vellum LLM leaderboard</a>
+
+      <div class="sources-cat">Original benchmark papers</div>
+      <a href="https://arxiv.org/abs/2311.12022" target="_blank" rel="noopener">GPQA: Graduate-Level Google-Proof Q&amp;A (Rein et al., 2023)</a>
+      <a href="https://www.nature.com/articles/s41586-025-09962-4" target="_blank" rel="noopener">Humanity's Last Exam (Nature, 2025)</a>
+      <a href="https://arxiv.org/abs/2310.06770" target="_blank" rel="noopener">SWE-bench (Jimenez et al., 2023)</a>
+      <a href="https://arxiv.org/abs/2009.03300" target="_blank" rel="noopener">MMLU (Hendrycks et al., 2020)</a>
+      <a href="https://openai.com/index/introducing-swe-bench-verified/" target="_blank" rel="noopener">Introducing SWE-bench Verified (OpenAI, 2024)</a>
+
+      <div class="sources-cat">Model release notes &amp; benchmark reports</div>
+      <a href="https://www.anthropic.com/news/claude-opus-4-7" target="_blank" rel="noopener">Introducing Claude Opus 4.7 (Anthropic, Apr 2026)</a>
+      <a href="https://www.vellum.ai/blog/claude-opus-4-7-benchmarks-explained" target="_blank" rel="noopener">Claude Opus 4.7 benchmarks (Vellum)</a>
+      <a href="https://www.vellum.ai/blog/everything-you-need-to-know-about-claude-mythos" target="_blank" rel="noopener">Claude Mythos overview (Vellum)</a>
+      <a href="https://www.mindstudio.ai/blog/claude-mythos-benchmark-results-swe-bench" target="_blank" rel="noopener">Claude Mythos SWE-bench results (MindStudio)</a>
+      <a href="https://artificialanalysis.ai/models/gpt-5-4" target="_blank" rel="noopener">GPT-5.4 analysis (Artificial Analysis)</a>
+      <a href="https://www.morphllm.com/swe-bench-pro" target="_blank" rel="noopener">SWE-bench Pro leaderboard (Morph)</a>
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+<div class="tooltip" id="tooltip">
+  <div class="tt-name" id="tt-name"></div>
+  <div class="tt-meta" id="tt-meta"></div>
+</div>
+
+<div class="info-tip" id="calibration-tip">
+  <h4>What "calibration error" means</h4>
+  <p><strong>Calibration</strong> = how well a model's stated confidence matches how often it's actually right.</p>
+  <div class="ex">A well-calibrated model that says <strong>"I'm 90% sure"</strong> should be right <strong>~90% of the time.</strong></div>
+  <p><strong>What's happening on HLE:</strong> models only score ~40% accuracy — but when they're wrong, they still claim 80–95% certainty. They don't know when they don't know.</p>
+  <p><strong>Why this matters:</strong> you can't tell from the model's tone whether to trust the answer. It'll state a made-up citation, wrong formula, or bad legal reasoning with the <em>same</em> confident tone as a correct answer.</p>
+</div>
+
+<script>
+// ── Shared helpers ────────────────────────────────────────────
+const dateToNum = d => { const [y,m] = d.split('-').map(Number); return y + (m-1)/12; };
+
+function makeSVG(tag, attrs) {
+  const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+  for (const [k,v] of Object.entries(attrs)) el.setAttribute(k,v);
+  return el;
+}
+
+const CLOSED = '#1e56c8';
+const OPEN   = '#2a6b8a';
+const HUMAN  = 'rgba(15,14,12,0.65)';
+
+function buildChart(svgId, data, {
+  xStart, xEnd, yMin, yMax, yTicks, yLabel,
+  humanLine, humanLabel,
+  closedLabel, openLabel,
+  saturated
+}) {
+  const svg = document.getElementById(svgId);
+  const W = 900, H = 420;
+  const pad = { l: 12, r: 60, t: 28, b: 48 };
+  const pw = W - pad.l - pad.r;
+  const ph = H - pad.t - pad.b;
+
+  const xs = v => pad.l + (v - xStart) / (xEnd - xStart) * pw;
+  const ys = v => pad.t + ph - (v - yMin) / (yMax - yMin) * ph;
+
+  // Grid
+  yTicks.forEach(y => {
+    const yy = ys(y);
+    svg.appendChild(makeSVG('line', {
+      x1: pad.l, y1: yy, x2: pad.l+pw, y2: yy,
+      stroke: 'rgba(15,14,12,0.1)', 'stroke-width': 1
+    }));
+    const label = makeSVG('text', {
+      x: pad.l - 8, y: yy + 4,
+      'text-anchor': 'end',
+      fill: '#8a8278',
+      'font-family': 'Cormorant Garamond, Georgia, serif',
+      'font-size': '10',
+      'font-weight': '500'
+    });
+    label.textContent = y + '%';
+    svg.appendChild(label);
+  });
+
+  // Y axis label
+  const yAxisLabel = makeSVG('text', {
+    x: -ph/2 - pad.t,
+    y: 10,
+    transform: 'rotate(-90)',
+    'text-anchor': 'middle',
+    fill: '#a8a094',
+    'font-family': 'Cormorant Garamond, Georgia, serif',
+    'font-size': '9.5',
+    'letter-spacing': '0.1em'
+  });
+  yAxisLabel.textContent = yLabel.toUpperCase();
+  svg.appendChild(yAxisLabel);
+
+  // X quarters
+  for (let y = Math.floor(xStart); y <= Math.ceil(xEnd); y++) {
+    [1,4,7,10].forEach(m => {
+      const v = y + (m-1)/12;
+      if (v < xStart || v > xEnd) return;
+      const x = xs(v);
+      svg.appendChild(makeSVG('line', {
+        x1: x, y1: pad.t, x2: x, y2: pad.t+ph,
+        stroke: 'rgba(15,14,12,0.08)', 'stroke-width': 1
+      }));
+      const months = ['Jan','Apr','Jul','Oct'];
+      const lbl = makeSVG('text', {
+        x, y: pad.t+ph+16,
+        'text-anchor': 'middle',
+        fill: '#8a8278',
+        'font-family': 'Cormorant Garamond, Georgia, serif',
+        'font-size': '9.5',
+        'font-weight': '500'
+      });
+      lbl.textContent = `${months[[1,4,7,10].indexOf(m)]} '${String(y).slice(2)}`;
+      svg.appendChild(lbl);
+    });
+  }
+
+  // Saturation zone
+  if (saturated) {
+    const sy1 = ys(saturated.top);
+    const sy2 = ys(saturated.bottom);
+    svg.appendChild(makeSVG('rect', {
+      x: pad.l, y: sy1, width: pw, height: sy2-sy1,
+      fill: 'rgba(15,14,12,0.04)'
+    }));
+    svg.appendChild(makeSVG('line', {
+      x1: pad.l, y1: ys(saturated.bottom), x2: pad.l+pw, y2: ys(saturated.bottom),
+      stroke: 'rgba(15,14,12,0.25)', 'stroke-width': 1, 'stroke-dasharray': '5,4'
+    }));
+    const sl = makeSVG('text', {
+      x: pad.l+6, y: ys(saturated.bottom) - 5,
+      fill: 'rgba(15,14,12,0.5)',
+      'font-family': 'Cormorant Garamond, Georgia, serif',
+      'font-size': '8.5',
+      'letter-spacing': '0.08em'
+    });
+    sl.textContent = '▲ SATURATION ZONE';
+    svg.appendChild(sl);
+  }
+
+  // Human baseline
+  if (humanLine != null) {
+    const hy = ys(humanLine);
+    svg.appendChild(makeSVG('line', {
+      x1: pad.l, y1: hy, x2: pad.l+pw, y2: hy,
+      stroke: 'rgba(15,14,12,0.6)', 'stroke-width': 1.5, 'stroke-dasharray': '8,5'
+    }));
+    const hl = makeSVG('text', {
+      x: pad.l+pw+4, y: hy+4,
+      fill: 'rgba(15,14,12,0.7)',
+      'font-family': 'Cormorant Garamond, Georgia, serif',
+      'font-size': '9',
+      'font-weight': '600'
+    });
+    hl.textContent = humanLabel;
+    svg.appendChild(hl);
+  }
+
+  // Region labels
+  function regionLabel(text, x, y, color) {
+    const g = makeSVG('g', {});
+    const isBlue = color === CLOSED;
+    const rx = makeSVG('rect', {
+      x: x-3, y: y-12, width: text.length*6.4+10, height: 18,
+      fill: isBlue ? 'rgba(30,86,200,0.08)' : 'rgba(42,107,138,0.08)',
+      rx: 3
+    });
+    g.appendChild(rx);
+    const t = makeSVG('text', {
+      x: x+2, y: y+1,
+      fill: color,
+      'font-family': 'Cormorant Garamond, Georgia, serif',
+      'font-size': '9.5',
+      'font-weight': '700',
+      'letter-spacing': '0.14em'
+    });
+    t.textContent = text.toUpperCase();
+    g.appendChild(t);
+    svg.appendChild(g);
+  }
+
+  if (closedLabel) regionLabel(closedLabel.text, xs(dateToNum(closedLabel.date)) + closedLabel.dx, ys(closedLabel.y), CLOSED);
+  if (openLabel) regionLabel(openLabel.text, xs(dateToNum(openLabel.date)) + openLabel.dx, ys(openLabel.y), OPEN);
+
+  // Dots + labels
+  const tooltip = document.getElementById('tooltip');
+  const ttName = document.getElementById('tt-name');
+  const ttMeta = document.getElementById('tt-meta');
+
+  // Compute horizontal jitter for dots sharing the same date
+  const dateIndex = {};
+  data.forEach((m, i) => {
+    if (!dateIndex[m.date]) dateIndex[m.date] = [];
+    dateIndex[m.date].push(i);
+  });
+  data.forEach((m, i) => {
+    const sibs = dateIndex[m.date];
+    const pos = sibs.indexOf(i);
+    const center = (sibs.length - 1) / 2;
+    m._jx = (pos - center) * 14;
+  });
+
+  data.forEach(m => {
+    const x = xs(dateToNum(m.date)) + (m._jx || 0);
+    const y = ys(m.score);
+    const color = m.type === 'closed' ? CLOSED : OPEN;
+
+    if (m.highlight) {
+      svg.appendChild(makeSVG('circle', {
+        cx: x, cy: y, r: 13,
+        fill: m.type==='closed' ? 'rgba(30,86,200,0.08)' : 'rgba(42,107,138,0.08)',
+        stroke: m.type==='closed' ? 'rgba(30,86,200,0.25)' : 'rgba(42,107,138,0.25)',
+        'stroke-width': 1
+      }));
+    }
+
+    const dot = makeSVG('circle', {
+      cx: x, cy: y, r: m.highlight ? 5 : 4,
+      fill: color, opacity: m.highlight ? 1 : 0.8,
+      style: 'cursor:pointer; transition: r 0.12s'
+    });
+
+    dot.addEventListener('mouseenter', e => {
+      dot.setAttribute('r', '7');
+      ttName.textContent = m.name;
+      ttName.style.color = color;
+      ttMeta.textContent = `${m.score}% · ${m.date.replace('-','/')}`;
+      tooltip.classList.add('on');
+    });
+    dot.addEventListener('mousemove', e => {
+      tooltip.style.left = (e.clientX + 14) + 'px';
+      tooltip.style.top = (e.clientY - 36) + 'px';
+    });
+    dot.addEventListener('mouseleave', () => {
+      dot.setAttribute('r', m.highlight ? '5' : '4');
+      tooltip.classList.remove('on');
+    });
+    svg.appendChild(dot);
+
+    // Label — only for highlighted models; others show name in tooltip on hover
+    if (m.highlight) {
+      const dir = m.labelDir || 'right';
+      let lx = x+8, ly = y+4;
+      let anchor = 'start';
+      if (dir==='above')    { lx=x; ly=y-10; anchor='middle'; }
+      if (dir==='below')    { lx=x; ly=y+18; anchor='middle'; }
+      if (dir==='left')     { lx=x-10; ly=y+4; anchor='end'; }
+      if (dir==='below-left') { lx=x-4; ly=y+18; anchor='end'; }
+
+      const lbl = makeSVG('text', {
+        x: lx, y: ly,
+        'text-anchor': anchor,
+        fill: '#0f0e0c',
+        'font-family': 'Outfit, sans-serif',
+        'font-size': '11',
+        'font-weight': '600'
+      });
+      lbl.textContent = m.name;
+      svg.appendChild(lbl);
+    }
+  });
+}
+
+// ══════════════════════════════════════════════════════════
+// SWE-bench Verified data
+// ══════════════════════════════════════════════════════════
+const sweData = [
+  // ── Closed source ──────────────────────────────────────────
+  { name: "Claude 2", date: "2023-10", score: 4.8, type: "closed", labelDir: "above" },
+  { name: "GPT-4 (1106)", date: "2024-04", score: 1.7, type: "closed", labelDir: "below" },
+  { name: "SWE-agent + GPT-4o", date: "2024-06", score: 23.7, type: "closed", labelDir: "above" },
+  { name: "SWE-agent + Claude 3.5 S", date: "2024-06", score: 28.7, type: "closed", labelDir: "below" },
+  { name: "GPT-4o (Nov)", date: "2024-11", score: 38.8, type: "closed", labelDir: "above" },
+  { name: "Claude 3.5 Sonnet", date: "2024-10", score: 49.0, type: "closed", labelDir: "above", highlight: true },
+  { name: "o1", date: "2024-12", score: 48.9, type: "closed", labelDir: "below" },
+  { name: "o3-mini", date: "2025-02", score: 49.3, type: "closed", labelDir: "below" },
+  { name: "Claude 3.7 Sonnet", date: "2025-02", score: 70.3, type: "closed", labelDir: "above", highlight: true },
+  { name: "o3", date: "2025-04", score: 71.7, type: "closed", labelDir: "below" },
+  { name: "GPT-4.1", date: "2025-04", score: 54.6, type: "closed", labelDir: "below" },
+  { name: "o4-mini", date: "2025-04", score: 68.1, type: "closed", labelDir: "above" },
+  { name: "Gemini 2.5 Pro", date: "2025-05", score: 63.8, type: "closed", labelDir: "below" },
+  { name: "GPT-5 mini", date: "2025-08", score: 65.2, type: "closed", labelDir: "above" },
+  { name: "GPT-5", date: "2025-08", score: 74.9, type: "closed", labelDir: "below" },
+  { name: "Claude Opus 4.5", date: "2025-10", score: 80.9, type: "closed", labelDir: "above", highlight: true },
+  { name: "Claude Sonnet 4.5", date: "2025-10", score: 77.2, type: "closed", labelDir: "below" },
+  { name: "GPT-5.2", date: "2025-12", score: 80.0, type: "closed", labelDir: "above" },
+  { name: "GPT-5.3 Codex", date: "2026-01", score: 85.0, type: "closed", labelDir: "above" },
+  { name: "Claude Opus 4.6", date: "2026-02", score: 80.8, type: "closed", labelDir: "below" },
+  { name: "Claude Sonnet 4.6", date: "2026-02", score: 79.6, type: "closed", labelDir: "below" },
+  { name: "Gemini 3 Pro", date: "2025-11", score: 78.0, type: "closed", labelDir: "above" },
+  { name: "Gemini 3.1 Pro", date: "2026-02", score: 80.6, type: "closed", labelDir: "above" },
+  { name: "Claude Opus 4.7", date: "2026-04", score: 87.6, type: "closed", labelDir: "above", highlight: true },
+  { name: "Claude Mythos", date: "2026-04", score: 93.9, type: "closed", labelDir: "above", highlight: true },
+
+  // ── Open source / open weight ───────────────────────────────
+  { name: "SWE-Llama 13B", date: "2023-10", score: 1.5, type: "open", labelDir: "above" },
+  { name: "Qwen2.5-Coder 32B", date: "2025-01", score: 43.0, type: "open", labelDir: "above" },
+  { name: "DeepSeek-V3", date: "2025-01", score: 42.0, type: "open", labelDir: "below" },
+  { name: "Llama 4 Scout", date: "2025-04", score: 19.8, type: "open", labelDir: "below" },
+  { name: "Llama 4 Maverick", date: "2025-04", score: 32.8, type: "open", labelDir: "above" },
+  { name: "Devstral", date: "2025-05", score: 46.8, type: "open", labelDir: "above" },
+  { name: "Qwen3-235B", date: "2025-05", score: 53.0, type: "open", labelDir: "below" },
+  { name: "Gemini 2.0 Flash", date: "2025-05", score: 33.1, type: "open", labelDir: "below" },
+  { name: "Kimi K2", date: "2025-07", score: 65.8, type: "open", labelDir: "above" },
+  { name: "GLM-4.5", date: "2025-08", score: 68.0, type: "open", labelDir: "below" },
+  { name: "Qwen3-Coder 480B", date: "2025-08", score: 66.4, type: "open", labelDir: "above" },
+  { name: "Devstral (Dec)", date: "2025-12", score: 60.1, type: "open", labelDir: "below" },
+  { name: "GLM-4.6", date: "2025-12", score: 72.8, type: "open", labelDir: "above" },
+  { name: "DeepSeek-V3.2", date: "2026-02", score: 73.0, type: "open", labelDir: "below" },
+  { name: "GLM-5", date: "2026-02", score: 77.8, type: "open", labelDir: "above" },
+  { name: "Kimi K2.5", date: "2026-02", score: 76.8, type: "open", labelDir: "below" },
+  { name: "MiniMax M2.5", date: "2026-02", score: 80.2, type: "open", labelDir: "above", highlight: true },
+  { name: "Qwen3-Coder-Next", date: "2026-03", score: 70.6, type: "open", labelDir: "below" },
+  { name: "Qwen3.5-35B", date: "2026-03", score: 69.2, type: "open", labelDir: "above" },
+];
+
+buildChart('svg-swe', sweData, {
+  xStart: dateToNum("2023-08"),
+  xEnd: dateToNum("2026-06"),
+  yMin: 0, yMax: 100,
+  yTicks: [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
+  yLabel: 'SWE-bench Verified % resolved',
+  humanLine: null,
+  closedLabel: { text: 'Closed source', date: '2023-09', dx: 0, y: 15 },
+  openLabel:   { text: 'Open source', date: '2025-06', dx: 0, y: 5 },
+  saturated: { top: 100, bottom: 78 }
+});
+
+// ══════════════════════════════════════════════════════════
+// GPQA Diamond data
+// ══════════════════════════════════════════════════════════
+const gpqaData = [
+  // ── Closed source ──────────────────────────────────────────
+  { name: "GPT-4", date: "2023-03", score: 39.0, type: "closed", labelDir: "above" },
+  { name: "Claude 2", date: "2023-07", score: 32.6, type: "closed", labelDir: "below" },
+  { name: "GPT-4 Turbo", date: "2023-11", score: 46.0, type: "closed", labelDir: "above" },
+  { name: "Gemini Ultra", date: "2024-01", score: 47.4, type: "closed", labelDir: "below" },
+  { name: "Claude 3 Opus", date: "2024-03", score: 60.1, type: "closed", labelDir: "above", highlight: true },
+  { name: "Claude 3 Sonnet", date: "2024-03", score: 40.4, type: "closed", labelDir: "below" },
+  { name: "Gemini 1.5 Pro", date: "2024-04", score: 46.2, type: "closed", labelDir: "above" },
+  { name: "GPT-4o", date: "2024-05", score: 53.6, type: "closed", labelDir: "below" },
+  { name: "Claude 3.5 Sonnet", date: "2024-06", score: 65.0, type: "closed", labelDir: "above" },
+  { name: "o1-preview", date: "2024-09", score: 73.3, type: "closed", labelDir: "above" },
+  { name: "o1", date: "2024-12", score: 77.3, type: "closed", labelDir: "above", highlight: true },
+  { name: "o3-mini", date: "2025-02", score: 79.7, type: "closed", labelDir: "below" },
+  { name: "Claude 3.7 Sonnet", date: "2025-02", score: 84.8, type: "closed", labelDir: "above" },
+  { name: "Gemini 2.5 Pro", date: "2025-03", score: 84.0, type: "closed", labelDir: "below" },
+  { name: "o3", date: "2025-04", score: 87.7, type: "closed", labelDir: "above" },
+  { name: "o4-mini", date: "2025-04", score: 81.4, type: "closed", labelDir: "below" },
+  { name: "GPT-4.1", date: "2025-04", score: 72.6, type: "closed", labelDir: "above" },
+  { name: "Gemini 2.5 Flash", date: "2025-05", score: 80.9, type: "closed", labelDir: "below" },
+  { name: "GPT-5", date: "2025-08", score: 89.5, type: "closed", labelDir: "above" },
+  { name: "Claude Opus 4.5", date: "2025-10", score: 91.3, type: "closed", labelDir: "below" },
+  { name: "GPT-5.2", date: "2025-12", score: 93.2, type: "closed", labelDir: "above" },
+  { name: "Gemini 3 Pro", date: "2025-11", score: 91.9, type: "closed", labelDir: "below" },
+  { name: "Gemini 3.1 Pro", date: "2026-02", score: 94.1, type: "closed", labelDir: "above", highlight: true },
+  { name: "Claude Opus 4.6", date: "2026-02", score: 91.8, type: "closed", labelDir: "below" },
+  { name: "GPT-5.4", date: "2026-03", score: 92.8, type: "closed", labelDir: "below" },
+  { name: "Claude Opus 4.7", date: "2026-04", score: 94.2, type: "closed", labelDir: "below", highlight: true },
+
+  // ── Open source / open weight ───────────────────────────────
+  { name: "Llama 2 70B", date: "2023-07", score: 31.1, type: "open", labelDir: "below" },
+  { name: "Mixtral 8x7B", date: "2023-12", score: 35.0, type: "open", labelDir: "above" },
+  { name: "Llama 3 70B", date: "2024-04", score: 39.5, type: "open", labelDir: "below" },
+  { name: "Llama 3.1 405B", date: "2024-07", score: 51.1, type: "open", labelDir: "above" },
+  { name: "Llama 3.3 70B", date: "2024-12", score: 50.5, type: "open", labelDir: "below" },
+  { name: "DeepSeek-R1", date: "2025-01", score: 71.5, type: "open", labelDir: "above", highlight: true },
+  { name: "Llama 4 Maverick", date: "2025-04", score: 69.8, type: "open", labelDir: "below" },
+  { name: "Qwen3-235B", date: "2025-05", score: 79.5, type: "open", labelDir: "above" },
+  { name: "Llama 4 Scout", date: "2025-04", score: 57.2, type: "open", labelDir: "below" },
+  { name: "Gemma 4 27B", date: "2025-04", score: 68.0, type: "open", labelDir: "above" },
+  { name: "Kimi K2", date: "2025-07", score: 77.0, type: "open", labelDir: "below" },
+  { name: "DeepSeek-V3.2", date: "2025-07", score: 81.0, type: "open", labelDir: "above" },
+  { name: "GLM-5", date: "2025-11", score: 91.7, type: "open", labelDir: "below", highlight: true },
+  { name: "Qwen3.5-397B", date: "2026-01", score: 89.0, type: "open", labelDir: "above" },
+  { name: "MiniMax M2.5", date: "2026-02", score: 86.4, type: "open", labelDir: "below" },
+];
+
+buildChart('svg-gpqa', gpqaData, {
+  xStart: dateToNum("2023-01"),
+  xEnd: dateToNum("2026-06"),
+  yMin: 25, yMax: 100,
+  yTicks: [25, 35, 45, 55, 65, 75, 85, 95],
+  yLabel: 'GPQA Diamond % accuracy',
+  humanLine: 65,
+  humanLabel: 'PhD expert ~65%',
+  closedLabel: { text: 'Closed source', date: '2023-02', dx: 0, y: 44 },
+  openLabel:   { text: 'Open source', date: '2024-10', dx: 0, y: 40 },
+  saturated: { top: 100, bottom: 88 }
+});
+
+// ══════════════════════════════════════════════════════════
+// MMLU data (5-shot, Apr 2022 – Apr 2026)
+// ══════════════════════════════════════════════════════════
+const mmluData = [
+  // ── Closed source ──────────────────────────────────────────
+  { name: "Chinchilla", date: "2022-03", score: 67.5, type: "closed", labelDir: "below" },
+  { name: "PaLM", date: "2022-04", score: 69.3, type: "closed", labelDir: "below" },
+  { name: "U-PaLM", date: "2022-10", score: 72.8, type: "closed", labelDir: "below" },
+  { name: "Flan-PaLM", date: "2022-10", score: 75.2, type: "closed", labelDir: "above" },
+  { name: "GPT-3.5 Turbo", date: "2023-01", score: 70.0, type: "closed", labelDir: "below" },
+  { name: "GPT-4", date: "2023-03", score: 86.4, type: "closed", labelDir: "above", highlight: true },
+  { name: "Claude 1.3", date: "2023-03", score: 75.6, type: "closed", labelDir: "right" },
+  { name: "Claude 2", date: "2023-07", score: 78.5, type: "closed", labelDir: "above" },
+  { name: "Gemini Ultra", date: "2024-01", score: 83.7, type: "closed", labelDir: "above" },
+  { name: "Gemini 1.5 Pro", date: "2024-02", score: 83.7, type: "closed", labelDir: "below" },
+  { name: "Claude 3 Opus", date: "2024-03", score: 86.8, type: "closed", labelDir: "above" },
+  { name: "Gemini 1.5 Pro v2", date: "2024-05", score: 85.9, type: "closed", labelDir: "below" },
+  { name: "GPT-4o", date: "2024-05", score: 87.2, type: "closed", labelDir: "below" },
+  { name: "Claude 3.5 Sonnet", date: "2024-06", score: 88.7, type: "closed", labelDir: "above", highlight: true },
+  { name: "Claude 3.7 Sonnet", date: "2025-02", score: 88.8, type: "closed", labelDir: "below" },
+  { name: "GPT-4.1", date: "2025-04", score: 90.2, type: "closed", labelDir: "above" },
+  { name: "Gemini 2.5 Pro", date: "2025-03", score: 91.5, type: "closed", labelDir: "above" },
+  { name: "Claude Opus 4.5", date: "2025-10", score: 89.5, type: "closed", labelDir: "below" },
+  { name: "GPT-5.2", date: "2025-09", score: 91.5, type: "closed", labelDir: "above" },
+  { name: "Gemini 3 Pro", date: "2025-11", score: 92.0, type: "closed", labelDir: "above" },
+  { name: "Gemini 3.1 Pro", date: "2026-02", score: 92.5, type: "closed", labelDir: "above", highlight: true },
+  { name: "Claude Opus 4.6", date: "2026-02", score: 91.8, type: "closed", labelDir: "below" },
+  { name: "Claude Opus 4.7", date: "2026-04", score: 92.4, type: "closed", labelDir: "below", highlight: true },
+
+  // ── Open source / open weight ───────────────────────────────
+  { name: "LLaMA 65B", date: "2023-02", score: 63.4, type: "open", labelDir: "below" },
+  { name: "Llama 2 70B", date: "2023-07", score: 68.9, type: "open", labelDir: "below" },
+  { name: "Falcon 180B", date: "2023-09", score: 70.1, type: "open", labelDir: "below" },
+  { name: "Mixtral 8x7B", date: "2023-12", score: 70.6, type: "open", labelDir: "above" },
+  { name: "Yi-34B", date: "2024-01", score: 76.4, type: "open", labelDir: "below" },
+  { name: "Qwen1.5 72B", date: "2024-02", score: 77.5, type: "open", labelDir: "above" },
+  { name: "DBRX Instruct 132B", date: "2024-03", score: 73.7, type: "open", labelDir: "below" },
+  { name: "Command R+", date: "2024-04", score: 78.0, type: "open", labelDir: "above" },
+  { name: "Mixtral 8x22B", date: "2024-04", score: 77.8, type: "open", labelDir: "below" },
+  { name: "Llama 3 70B", date: "2024-04", score: 82.0, type: "open", labelDir: "above" },
+  { name: "Llama 3 8B", date: "2024-04", score: 66.6, type: "open", labelDir: "below" },
+  { name: "DeepSeek-V2", date: "2024-05", score: 78.5, type: "open", labelDir: "above" },
+  { name: "Qwen 2 72B", date: "2024-06", score: 84.2, type: "open", labelDir: "above" },
+  { name: "Gemma 2 9B", date: "2024-06", score: 71.3, type: "open", labelDir: "below" },
+  { name: "Gemma 2 27B", date: "2024-06", score: 75.2, type: "open", labelDir: "above" },
+  { name: "Llama 3.1 405B", date: "2024-07", score: 85.1, type: "open", labelDir: "above" },
+  { name: "Llama 3.1 70B", date: "2024-07", score: 86.0, type: "open", labelDir: "below" },
+  { name: "Mistral Large 2", date: "2024-07", score: 84.0, type: "open", labelDir: "above" },
+  { name: "DeepSeek-V2.5", date: "2024-09", score: 80.4, type: "open", labelDir: "below" },
+  { name: "Qwen2.5-72B", date: "2024-09", score: 86.1, type: "open", labelDir: "above" },
+  { name: "DeepSeek-V3", date: "2025-01", score: 88.5, type: "open", labelDir: "below" },
+  { name: "Llama 4 Maverick", date: "2025-04", score: 88.1, type: "open", labelDir: "below" },
+  { name: "Qwen3-235B", date: "2025-05", score: 89.0, type: "open", labelDir: "above" },
+  { name: "DeepSeek-V3.2", date: "2025-07", score: 89.2, type: "open", labelDir: "below" },
+  { name: "GLM-5", date: "2025-11", score: 91.7, type: "open", labelDir: "below", highlight: true },
+  { name: "Qwen3.5-397B", date: "2026-01", score: 91.0, type: "open", labelDir: "below" },
+];
+
+buildChart('svg-mmlu', mmluData, {
+  xStart: dateToNum("2022-02"),
+  xEnd: dateToNum("2026-06"),
+  yMin: 63, yMax: 95,
+  yTicks: [63, 66, 69, 72, 75, 78, 81, 84, 87, 90, 93],
+  yLabel: 'MMLU 5-shot % accuracy',
+  humanLine: 89,
+  humanLabel: 'Human expert ~89%',
+  closedLabel: { text: 'Closed source', date: '2022-03', dx: 0, y: 80 },
+  openLabel:   { text: 'Open source', date: '2025-04', dx: 0, y: 64.5 },
+  saturated: { top: 95, bottom: 88 }
+});
+
+// ══════════════════════════════════════════════════════════
+// HLE data + draw function
+// ══════════════════════════════════════════════════════════
+const hleData = [
+  { name:"GPT-4o",              d:"2025-01", s:2.7,  t:"c" },
+  { name:"Claude 3.5 Sonnet",   d:"2025-01", s:4.1,  t:"c" },
+  { name:"o1 Pro",              d:"2025-01", s:7.7,  t:"c", hi:true },
+  { name:"o3-mini (high)",      d:"2025-02", s:13.4, t:"c" },
+  { name:"DeepSeek-R1",         d:"2025-02", s:8.5,  t:"o", hi:true, dir:"below" },
+  { name:"Claude 3.7 Sonnet",   d:"2025-02", s:8.9,  t:"c" },
+  { name:"Gemini 2.5 Pro",      d:"2025-03", s:18.4, t:"c" },
+  { name:"o3 (high)",           d:"2025-04", s:20.3, t:"c", hi:true },
+  { name:"o4-mini (high)",      d:"2025-04", s:18.9, t:"c" },
+  { name:"GPT-4.1",             d:"2025-04", s:6.8,  t:"c" },
+  { name:"Llama 4 Maverick",    d:"2025-04", s:5.7,  t:"o" },
+  { name:"Qwen3-235B",          d:"2025-05", s:15.4, t:"o" },
+  { name:"Grok 3",              d:"2025-05", s:9.2,  t:"c" },
+  { name:"DeepSeek-R1-0528",    d:"2025-06", s:14.0, t:"o" },
+  { name:"Kimi K2",             d:"2025-07", s:13.5, t:"o" },
+  { name:"Grok 4",              d:"2025-07", s:24.5, t:"o", hi:true },
+  { name:"GPT-5 mini",          d:"2025-08", s:19.7, t:"c" },
+  { name:"GPT-5 Pro",           d:"2025-08", s:31.6, t:"c", hi:true },
+  { name:"Claude Opus 4.5",     d:"2025-10", s:25.2, t:"c" },
+  { name:"GLM-5",               d:"2025-11", s:19.0, t:"o" },
+  { name:"Gemini 3 Pro",        d:"2025-11", s:37.5, t:"c", hi:true },
+  { name:"GPT-5.2",             d:"2025-12", s:27.8, t:"c" },
+  { name:"GPT-5.3 Codex",       d:"2026-01", s:39.9, t:"c" },
+  { name:"DeepSeek-V3.2",       d:"2026-01", s:16.5, t:"o" },
+  { name:"Kimi K2.5",           d:"2026-02", s:22.0, t:"o" },
+  { name:"Claude Opus 4.6",     d:"2026-02", s:34.4, t:"c" },
+  { name:"Gemini 3.1 Pro",      d:"2026-02", s:44.7, t:"c", hi:true },
+  { name:"Qwen3.5-397B",        d:"2026-02", s:25.1, t:"o" },
+  { name:"GPT-5.4",             d:"2026-03", s:41.6, t:"c" },
+  { name:"Claude Opus 4.7",     d:"2026-04", s:46.0, t:"c", hi:true, dir:"below" },
+  { name:"Claude Mythos",       d:"2026-04", s:64.7, t:"c", hi:true },
+];
+
+let hleBuilt = false;
+function drawHLE() {
+  if (hleBuilt) return;
+  hleBuilt = true;
+  const NS = "http://www.w3.org/2000/svg";
+  const svg = document.getElementById("svg-hle");
+  const W=900,H=460,pl=14,pr=110,pt=36,pb=52;
+  const pw=W-pl-pr, ph=H-pt-pb;
+  const X0=2024+10/12, X1=2026+7/12, Y0=0, Y1=100;
+  const xp = v => pl+(v-X0)/(X1-X0)*pw;
+  const yp = v => pt+ph-(v-Y0)/(Y1-Y0)*ph;
+  const dn = s => { const [y,m]=s.split("-").map(Number); return y+(m-1)/12; };
+  const BLUE="#1e56c8", GREEN="#2a6b8a";
+
+  function e(tag, a, txt) {
+    const el = document.createElementNS(NS, tag);
+    for (const [k,v] of Object.entries(a)) el.setAttribute(k, String(v));
+    if (txt != null) el.textContent = txt;
+    svg.appendChild(el);
+    return el;
+  }
+
+  // Grid
+  [0,10,20,30,40,50,60,70,80,90,100].forEach(y => {
+    e("line",{x1:pl,y1:yp(y),x2:pl+pw,y2:yp(y),stroke:"rgba(15,14,12,0.1)","stroke-width":"1"});
+    e("text",{x:pl-8,y:yp(y)+4,"text-anchor":"end",fill:"#8a8278","font-family":"sans-serif","font-size":"10"},y+"%");
+  });
+
+  // X ticks
+  [[2024,10],[2025,1],[2025,4],[2025,7],[2025,10],[2026,1],[2026,4]].forEach(([y,m]) => {
+    const v=y+(m-1)/12, x=xp(v);
+    e("line",{x1:x,y1:pt,x2:x,y2:pt+ph,stroke:"rgba(15,14,12,0.08)","stroke-width":"1"});
+    const L={1:"Jan",4:"Apr",7:"Jul",10:"Oct"};
+    e("text",{x,y:pt+ph+16,"text-anchor":"middle",fill:"#8a8278","font-family":"sans-serif","font-size":"9.5"},L[m]+" '"+String(y).slice(2));
+  });
+
+  // Human expert line
+  e("line",{x1:pl,y1:yp(90),x2:pl+pw,y2:yp(90),stroke:"rgba(15,14,12,0.6)","stroke-width":"1.5","stroke-dasharray":"8 5"});
+  e("text",{x:pl+pw+5,y:yp(90)+4,fill:"rgba(15,14,12,0.7)","font-family":"sans-serif","font-size":"9","font-weight":"bold"},"Human expert ~90%");
+
+  // 50% milestone line
+  e("line",{x1:pl,y1:yp(50),x2:pl+pw,y2:yp(50),stroke:"rgba(15,14,12,0.35)","stroke-width":"1","stroke-dasharray":"5 4"});
+  e("text",{x:pl+pw+5,y:yp(50)+4,fill:"rgba(15,14,12,0.6)","font-family":"sans-serif","font-size":"9","font-weight":"bold"},"\"Expert-level\" milestone");
+
+  // Gap shading
+  e("rect",{x:pl,y:yp(90),width:pw,height:yp(44.7)-yp(90),fill:"rgba(15,14,12,0.04)"});
+
+  // Annotation boxes
+  function box(lines, ax, ay) {
+    const lh=14, p=7;
+    const bw=Math.max(...lines.map(l=>l.length))*5.6+p*2;
+    const bh=lines.length*lh+p*2;
+    e("rect",{x:ax,y:ay,width:bw,height:bh,fill:"#ede8e0",stroke:"#cbd5e1","stroke-width":"1",rx:"4"});
+    lines.forEach((ln,i)=>e("text",{x:ax+p,y:ay+p+(i+1)*lh-2,fill:i===0?"#1e293b":"#8a8278","font-family":"sans-serif","font-size":"8.5","font-weight":i===0?"bold":"normal"},ln));
+  }
+
+  box(["Jan 2025: HLE launches","o1 Pro best: 7.7%  |  GPT-4o: 2.7%"], xp(dn("2025-01"))+14, yp(36));
+  box(["Apr 2025: o3 breaks 20%","First model past the 20% barrier"], xp(dn("2025-04"))+14, yp(48));
+  box(["Aug 2025: GPT-5 Pro hits 31.6%","First model past 30%"], xp(dn("2025-08"))+14, yp(60));
+  box(["Claude Mythos Preview (Apr 2026)","64.7% — record score","Limited access only \u26A0"], xp(dn("2025-10")), yp(80));
+
+  // Calibration warning — top-left, in empty area above the early data
+  const calRect = e("rect",{x:pl,y:yp(97),width:410,height:22,fill:"rgba(15,14,12,0.07)",stroke:"rgba(15,14,12,0.25)","stroke-width":"1",rx:"4"});
+  const calText = e("text",{x:pl+8,y:yp(97)+14,fill:"#0f0e0c","font-family":"sans-serif","font-size":"8.5","font-weight":"bold"},"\u26A0 Models are overconfident: they state 80\u201395% certainty even on wrong answers");
+  calRect.style.cursor = "help";
+  calText.style.cursor = "help";
+  const calTip = document.getElementById("calibration-tip");
+  const showCal = ev => {
+    calTip.classList.add("on");
+    const tw = 320, pad = 12;
+    let L = ev.clientX + 14, T = ev.clientY + 14;
+    if (L + tw + pad > window.innerWidth) L = ev.clientX - tw - 14;
+    calTip.style.left = L + "px";
+    calTip.style.top = T + "px";
+  };
+  const hideCal = () => calTip.classList.remove("on");
+  [calRect, calText].forEach(el => {
+    el.addEventListener("mouseenter", showCal);
+    el.addEventListener("mousemove", showCal);
+    el.addEventListener("mouseleave", hideCal);
+  });
+
+  // Pre-launch note — explains why the chart has no data before Jan 2025
+  e("text",{x:xp(dn("2024-11"))+2,y:yp(18),fill:"#a8a094","font-family":"Instrument Sans, sans-serif","font-size":"9.5","font-style":"italic"},"HLE didn't exist");
+  e("text",{x:xp(dn("2024-11"))+2,y:yp(18)+13,fill:"#a8a094","font-family":"Instrument Sans, sans-serif","font-size":"9.5","font-style":"italic"},"before Jan 2025 \u2192");
+
+  // Dots + labels
+  const tt=document.getElementById("tooltip");
+  const ttN=document.getElementById("tt-name");
+  const ttM=document.getElementById("tt-meta");
+
+  // Horizontal jitter for same-date points
+  const hleDateIdx = {};
+  hleData.forEach((m,i) => { (hleDateIdx[m.d] = hleDateIdx[m.d] || []).push(i); });
+  hleData.forEach((m,i) => {
+    const sibs = hleDateIdx[m.d];
+    const pos = sibs.indexOf(i);
+    const center = (sibs.length - 1) / 2;
+    m._jx = (pos - center) * 14;
+  });
+
+  hleData.forEach(m => {
+    const x=xp(dn(m.d)) + (m._jx || 0), y=yp(m.s);
+    const col=m.t==="c"?BLUE:GREEN;
+    if (m.hi) e("circle",{cx:x,cy:y,r:"12",fill:m.t==="c"?"rgba(30,86,200,0.1)":"rgba(42,107,138,0.1)",stroke:m.t==="c"?"rgba(30,86,200,0.3)":"rgba(42,107,138,0.3)","stroke-width":"1"});
+    const dot=document.createElementNS(NS,"circle");
+    dot.setAttribute("cx",x); dot.setAttribute("cy",y);
+    dot.setAttribute("r",m.hi?"5":"4"); dot.setAttribute("fill",col);
+    dot.setAttribute("opacity",m.hi?"1":"0.85"); dot.style.cursor="pointer";
+    dot.addEventListener("mouseenter",()=>{ dot.setAttribute("r","7"); ttN.textContent=m.name; ttN.style.color=col; ttM.textContent=m.s+"% HLE \u00B7 "+m.d.replace("-","/"); tt.classList.add("on"); });
+    dot.addEventListener("mousemove",ev=>{ tt.style.left=(ev.clientX+14)+"px"; tt.style.top=(ev.clientY-36)+"px"; });
+    dot.addEventListener("mouseleave",()=>{ dot.setAttribute("r",m.hi?"5":"4"); tt.classList.remove("on"); });
+    svg.appendChild(dot);
+    if (m.hi) {
+      let lx=x+8, ly=y+4, anchor="start";
+      if (m.dir==="above") { lx=x; ly=y-10; anchor="middle"; }
+      if (m.dir==="below") { lx=x; ly=y+18; anchor="middle"; }
+      if (m.dir==="left")  { lx=x-8; anchor="end"; }
+      e("text",{x:lx,y:ly,"text-anchor":anchor,fill:"#111","font-family":"Instrument Sans, sans-serif","font-size":"11","font-weight":"600"},m.name);
+    }
+  });
+}
+
+// ── Tab switching ─────────────────────────────────────────
+function switchTab(id) {
+  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+  document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+  event.target.classList.add("active");
+  document.getElementById("panel-" + id).classList.add("active");
+  if (id === "hle") requestAnimationFrame(drawHLE);
+}
+
+</script>
+</body>
+</html>

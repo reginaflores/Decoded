@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Major AI Platforms — Reference Guide</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #0F0F1A; color: #E8E8F0; font-family: Georgia, 'Times New Roman', serif; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #1a1a2e; }
+    ::-webkit-scrollbar-thumb { background: #6C63FF; border-radius: 3px; }
+    .pill-btn { cursor: pointer; border: none; transition: all 0.2s; font-family: inherit; }
+    .pill-btn:hover { transform: translateY(-1px); opacity: 0.9; }
+    .row-hover:hover { background: rgba(108,99,255,0.08) !important; }
+    input::placeholder { color: #555570; }
+    input { outline: none; }
+    @media (max-width: 600px) {
+      .table-grid { grid-template-columns: 1.2fr 1fr 2fr 0.4fr 0.4fr !important; }
+      .hide-mobile { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState } = React;
+
+    const platforms = [
+      // TEXT & CHAT
+      { category: "Text & Chat", name: "Claude", url: "https://claude.ai", company: "Anthropic", free: true, paid: true, highlight: "Safety-focused, long docs & deep analysis" },
+      { category: "Text & Chat", name: "ChatGPT", url: "https://chatgpt.com", company: "OpenAI", free: true, paid: true, highlight: "Most popular, huge ecosystem & plugins" },
+      { category: "Text & Chat", name: "Gemini", url: "https://gemini.google.com", company: "Google", free: true, paid: true, highlight: "Google Workspace integration, real-time search" },
+      { category: "Text & Chat", name: "Copilot", url: "https://copilot.microsoft.com", company: "Microsoft", free: true, paid: true, highlight: "Built into Office 365 & Windows" },
+      { category: "Text & Chat", name: "Grok", url: "https://grok.com", company: "xAI", free: true, paid: true, highlight: "Integrated with X (Twitter), unfiltered tone" },
+      { category: "Text & Chat", name: "DeepSeek", url: "https://deepseek.com", company: "DeepSeek (China)", free: true, paid: false, highlight: "Powerful open-source model, caused major buzz" },
+      { category: "Text & Chat", name: "Meta AI", url: "https://ai.meta.com", company: "Meta", free: true, paid: false, highlight: "Built into WhatsApp, Instagram, Facebook" },
+      { category: "Text & Chat", name: "Mistral", url: "https://mistral.ai", company: "Mistral AI", free: true, paid: true, highlight: "Leading European open-source model" },
+      { category: "Text & Chat", name: "Perplexity", url: "https://perplexity.ai", company: "Perplexity AI", free: true, paid: true, highlight: "AI search engine with cited sources" },
+      { category: "Text & Chat", name: "Pi", url: "https://pi.ai", company: "Inflection AI", free: true, paid: false, highlight: "Emotional, coaching-focused conversations" },
+      { category: "Text & Chat", name: "LLaMA", url: "https://llama.meta.com", company: "Meta", free: true, paid: false, highlight: "Open source, run locally on your computer" },
+      { category: "Text & Chat", name: "Command R", url: "https://cohere.com", company: "Cohere", free: false, paid: true, highlight: "Enterprise RAG & business workflows" },
+      { category: "Text & Chat", name: "Qwen", url: "https://qwen.ai", company: "Alibaba", free: true, paid: true, highlight: "Open-source frontier model — dominant in multilingual tasks" },
+      { category: "Text & Chat", name: "Gemma", url: "https://ai.google.dev/gemma", company: "Google", free: true, paid: false, highlight: "Google's free open-source model — runs locally on your device" },
+      { category: "Text & Chat", name: "Phi 4", url: "https://azure.microsoft.com/en-us/products/phi", company: "Microsoft", free: true, paid: false, highlight: "Small open-source model — excellent for on-device use" },
+      { category: "Text & Chat", name: "Le Chat", url: "https://chat.mistral.ai", company: "Mistral", free: true, paid: true, highlight: "Mistral's consumer chat — fast and GDPR-friendly" },
+
+      // IMAGE
+      { category: "Image", name: "DALL·E 3", url: "https://openai.com/dall-e-3", company: "OpenAI", free: false, paid: true, highlight: "Inside ChatGPT, follows prompts precisely" },
+      { category: "Image", name: "Midjourney", url: "https://midjourney.com", company: "Midjourney", free: false, paid: true, highlight: "Best artistic & cinematic quality" },
+      { category: "Image", name: "Stable Diffusion", url: "https://stability.ai", company: "Stability AI", free: true, paid: true, highlight: "Open source, highly customizable" },
+      { category: "Image", name: "Adobe Firefly", url: "https://firefly.adobe.com", company: "Adobe", free: true, paid: true, highlight: "Commercially safe, built into Photoshop" },
+      { category: "Image", name: "Canva AI", url: "https://canva.com", company: "Canva", free: true, paid: true, highlight: "Easy design for non-designers" },
+      { category: "Image", name: "Ideogram", url: "https://ideogram.ai", company: "Ideogram", free: true, paid: true, highlight: "Best at text inside images (logos, posters)" },
+      { category: "Image", name: "Leonardo AI", url: "https://leonardo.ai", company: "Leonardo", free: true, paid: true, highlight: "Game art, characters & concept art" },
+      { category: "Image", name: "Imagen", url: "https://gemini.google.com", company: "Google", free: false, paid: true, highlight: "Google's image model inside Gemini" },
+      { category: "Image", name: "Bing Image Creator", url: "https://www.bing.com/create", company: "Microsoft", free: true, paid: false, highlight: "Free DALL·E access via Bing" },
+      { category: "Image", name: "Grok Aurora", url: "https://grok.com", company: "xAI", free: true, paid: true, highlight: "Built into Grok on X platform" },
+      { category: "Image", name: "Flux", url: "https://blackforestlabs.ai", company: "Black Forest Labs", free: true, paid: true, highlight: "Open-source frontier model — sharper realism than DALL·E" },
+      { category: "Image", name: "Krea", url: "https://krea.ai", company: "Krea", free: true, paid: true, highlight: "Real-time generation + image editing for creatives" },
+      { category: "Image", name: "Recraft", url: "https://recraft.ai", company: "Recraft", free: true, paid: true, highlight: "Vector design and brand-consistent illustration" },
+      { category: "Image", name: "GPT Image 2", url: "https://openai.com", company: "OpenAI", free: false, paid: true, highlight: "Native ChatGPT image gen with reasoning + 2K resolution" },
+
+      // VIDEO
+      { category: "Video", name: "Sora", url: "https://sora.com", company: "OpenAI", free: false, paid: false, highlight: "DISCONTINUED (Apr 2026) — was OpenAI's text-to-video model" },
+      { category: "Video", name: "Runway", url: "https://runwayml.com", company: "Runway", free: true, paid: true, highlight: "Pro-grade tools used by filmmakers" },
+      { category: "Video", name: "Pika", url: "https://pika.art", company: "Pika Labs", free: true, paid: true, highlight: "Fun, beginner-friendly short clips" },
+      { category: "Video", name: "Kling", url: "https://klingai.com", company: "Kuaishou", free: true, paid: true, highlight: "High-quality realistic motion" },
+      { category: "Video", name: "Luma Dream Machine", url: "https://lumalabs.ai", company: "Luma AI", free: true, paid: true, highlight: "Stunning quality, popular free tier" },
+      { category: "Video", name: "Google Veo", url: "https://deepmind.google/technologies/veo", company: "Google", free: false, paid: true, highlight: "Sora competitor, inside Gemini" },
+      { category: "Video", name: "Synthesia", url: "https://synthesia.io", company: "Synthesia", free: false, paid: true, highlight: "AI avatar presenters for training videos" },
+      { category: "Video", name: "HeyGen", url: "https://heygen.com", company: "HeyGen", free: true, paid: true, highlight: "Avatar & talking-head videos" },
+      { category: "Video", name: "Veo 3", url: "https://deepmind.google/technologies/veo", company: "Google", free: false, paid: true, highlight: "Google's flagship video model — Sora's main successor" },
+      { category: "Video", name: "Hailuo", url: "https://hailuoai.video", company: "MiniMax", free: true, paid: true, highlight: "Chinese video model with strong character consistency" },
+      { category: "Video", name: "Hedra", url: "https://hedra.com", company: "Hedra", free: true, paid: true, highlight: "Character & talking-head video with expressive performance" },
+      { category: "Video", name: "Captions", url: "https://captions.ai", company: "Captions", free: true, paid: true, highlight: "AI-powered video editor for creators and marketers" },
+
+      // AUDIO & MUSIC
+      { category: "Audio & Music", name: "Suno", url: "https://suno.com", company: "Suno", free: true, paid: true, highlight: "Full songs from text — any genre" },
+      { category: "Audio & Music", name: "Udio", url: "https://udio.com", company: "Udio", free: true, paid: true, highlight: "High-fidelity music generation" },
+      { category: "Audio & Music", name: "ElevenLabs", url: "https://elevenlabs.io", company: "ElevenLabs", free: true, paid: true, highlight: "Voice cloning & realistic text-to-speech" },
+      { category: "Audio & Music", name: "Murf", url: "https://murf.ai", company: "Murf AI", free: true, paid: true, highlight: "Voiceovers for videos & presentations" },
+      { category: "Audio & Music", name: "Descript", url: "https://descript.com", company: "Descript", free: true, paid: true, highlight: "Podcast & video editing with AI voice" },
+      { category: "Audio & Music", name: "Hume AI", url: "https://hume.ai", company: "Hume", free: true, paid: true, highlight: "Emotionally expressive voice AI for empathetic interfaces" },
+      { category: "Audio & Music", name: "Cartesia", url: "https://cartesia.ai", company: "Cartesia", free: true, paid: true, highlight: "Ultra-low-latency voice model for real-time agents" },
+      { category: "Audio & Music", name: "PlayHT", url: "https://play.ht", company: "PlayHT", free: true, paid: true, highlight: "High-quality voice cloning and narration" },
+
+      // CODING
+      { category: "Coding", name: "GitHub Copilot", url: "https://github.com/features/copilot", company: "GitHub / Microsoft", free: true, paid: true, highlight: "Inline code suggestions in VS Code" },
+      { category: "Coding", name: "Cursor", url: "https://cursor.com", company: "Cursor", free: true, paid: true, highlight: "AI-first code editor, very popular" },
+      { category: "Coding", name: "Claude Code", url: "https://claude.ai/code", company: "Anthropic", free: false, paid: true, highlight: "Terminal-based agentic coding" },
+      { category: "Coding", name: "Replit AI", url: "https://replit.com", company: "Replit", free: true, paid: true, highlight: "Build & deploy apps in the browser" },
+      { category: "Coding", name: "Tabnine", url: "https://tabnine.com", company: "Tabnine", free: true, paid: true, highlight: "Privacy-focused code completion" },
+      { category: "Coding", name: "v0", url: "https://v0.dev", company: "Vercel", free: true, paid: true, highlight: "Generate React UI from text prompts" },
+      { category: "Coding", name: "Windsurf", url: "https://windsurf.com", company: "Codeium", free: true, paid: true, highlight: "Agentic AI code editor — Cursor's main competitor" },
+      { category: "Coding", name: "Bolt.new", url: "https://bolt.new", company: "StackBlitz", free: true, paid: true, highlight: "Vibe coding in the browser — type, see an app" },
+      { category: "Coding", name: "Lovable", url: "https://lovable.dev", company: "Lovable", free: true, paid: true, highlight: "Build full web apps from plain-English prompts" },
+      { category: "Coding", name: "Aider", url: "https://aider.chat", company: "Aider", free: true, paid: false, highlight: "Open-source terminal AI pair programmer" },
+      { category: "Coding", name: "Cline", url: "https://cline.bot", company: "Cline", free: true, paid: true, highlight: "Open-source AI coding agent for VS Code" },
+      { category: "Coding", name: "Devin", url: "https://devin.ai", company: "Cognition", free: false, paid: true, highlight: "Autonomous AI software engineer — plans, codes, ships" },
+
+      // PRODUCTIVITY
+      { category: "Productivity", name: "Claude Cowork", url: "https://claude.com/product/cowork", company: "Anthropic", free: false, paid: true, highlight: "Desktop tool for non-developers to automate file & task management" },
+      { category: "Productivity", name: "Notion AI", url: "https://notion.so", company: "Notion", free: false, paid: true, highlight: "Summarize, write & search inside Notion" },
+      { category: "Productivity", name: "Grammarly AI", url: "https://grammarly.com", company: "Grammarly", free: true, paid: true, highlight: "Writing assistant across all your apps" },
+      { category: "Productivity", name: "Otter.ai", url: "https://otter.ai", company: "Otter", free: true, paid: true, highlight: "Meeting transcription & summaries" },
+      { category: "Productivity", name: "Glean", url: "https://glean.com", company: "Glean", free: false, paid: true, highlight: "Enterprise AI search across all your tools" },
+      { category: "Productivity", name: "NotebookLM", url: "https://notebooklm.google.com", company: "Google", free: true, paid: true, highlight: "Upload sources, get a research assistant that cites them" },
+      { category: "Productivity", name: "Granola", url: "https://granola.ai", company: "Granola", free: true, paid: true, highlight: "AI meeting notes that sit in the background and listen" },
+      { category: "Productivity", name: "Mem", url: "https://mem.ai", company: "Mem", free: true, paid: true, highlight: "AI-organized notes that surface what you need when you need it" },
+      { category: "Productivity", name: "Manus", url: "https://manus.im", company: "Butterfly Effect", free: false, paid: true, highlight: "General-purpose agent that completes tasks autonomously" },
+      { category: "Productivity", name: "Reclaim.ai", url: "https://reclaim.ai", company: "Reclaim", free: true, paid: true, highlight: "AI calendar that auto-schedules your tasks and habits" },
+
+      // EDUCATION
+      { category: "Education", name: "Khanmigo", url: "https://khanacademy.org/khan-labs", company: "Khan Academy", free: true, paid: true, highlight: "AI tutor built on Khan Academy's full curriculum — never just gives the answer" },
+      { category: "Education", name: "MagicSchool", url: "https://magicschool.ai", company: "MagicSchool", free: true, paid: true, highlight: "AI suite for teachers — lesson plans, rubrics, IEP support, parent comms" },
+      { category: "Education", name: "SchoolAI", url: "https://schoolai.com", company: "SchoolAI", free: true, paid: true, highlight: "Student-facing AI with teacher oversight and live dashboards" },
+      { category: "Education", name: "Brisk Teaching", url: "https://briskteaching.com", company: "Brisk", free: true, paid: true, highlight: "Chrome extension — grades, gives feedback, levels text inside Docs" },
+      { category: "Education", name: "Curipod", url: "https://curipod.com", company: "Curipod", free: true, paid: true, highlight: "AI-generated interactive lessons with polls, drawings, and discussion" },
+      { category: "Education", name: "Diffit", url: "https://diffit.me", company: "Diffit", free: true, paid: true, highlight: "Differentiates any text or topic to any reading level instantly" },
+      { category: "Education", name: "Eduaide.AI", url: "https://eduaide.ai", company: "Eduaide", free: true, paid: true, highlight: "Lesson planning, assessment design, and feedback generation for educators" },
+      { category: "Education", name: "Quizlet AI", url: "https://quizlet.com", company: "Quizlet", free: true, paid: true, highlight: "AI study modes — flashcards, quizzes, and tutoring from any material" },
+
+      // FINANCE
+      { category: "Finance", name: "Bloomberg AI", url: "https://bloomberg.com/ai", company: "Bloomberg", free: false, paid: true, highlight: "AI-powered market data, news, and financial analysis" },
+      { category: "Finance", name: "Kensho", url: "https://kensho.com", company: "S&P Global", free: false, paid: true, highlight: "Financial analytics and intelligence for markets" },
+      { category: "Finance", name: "Vertus", url: "https://vertus.ai", company: "Vertus", free: false, paid: true, highlight: "AI-native tools built specifically for finance professionals" },
+      { category: "Finance", name: "Alphasense", url: "https://alpha-sense.com", company: "AlphaSense", free: false, paid: true, highlight: "AI search and analysis across financial documents and filings" },
+      { category: "Finance", name: "Kavout", url: "https://kavout.com", company: "Kavout", free: false, paid: true, highlight: "AI-driven stock screening and investment signals" },
+      { category: "Finance", name: "Ocrolus", url: "https://ocrolus.com", company: "Ocrolus", free: false, paid: true, highlight: "AI document analysis for lending, banking and compliance" },
+
+      // LEGAL
+      { category: "Legal", name: "Harvey", url: "https://harvey.ai", company: "Harvey", free: false, paid: true, highlight: "AI for lawyers — contracts, research & legal workflows" },
+      { category: "Legal", name: "Casetext", url: "https://casetext.com", company: "Thomson Reuters", free: false, paid: true, highlight: "AI legal research and brief drafting" },
+      { category: "Legal", name: "Ironclad", url: "https://ironcladapp.com", company: "Ironclad", free: false, paid: true, highlight: "AI contract lifecycle management — drafting, negotiation, and tracking" },
+      { category: "Legal", name: "Luminance", url: "https://luminance.com", company: "Luminance", free: false, paid: true, highlight: "AI for legal document review and due diligence" },
+      { category: "Legal", name: "Spellbook", url: "https://spellbook.legal", company: "Rally", free: false, paid: true, highlight: "AI contract drafting assistant built directly into Microsoft Word" },
+      { category: "Legal", name: "Lexis+ AI", url: "https://lexisnexis.com", company: "LexisNexis", free: false, paid: true, highlight: "AI-powered legal research across the full LexisNexis database" },
+      { category: "Legal", name: "CoCounsel", url: "https://legal.thomsonreuters.com/en/products/cocounsel", company: "Thomson Reuters", free: false, paid: true, highlight: "AI legal assistant built into Westlaw for research and drafting" },
+      { category: "Legal", name: "Relativity", url: "https://relativity.com", company: "Relativity", free: false, paid: true, highlight: "AI-powered e-discovery and litigation document review at scale" },
+
+      // MARKETING & FASHION
+      { category: "Marketing & Fashion", name: "Jasper", url: "https://jasper.ai", company: "Jasper", free: false, paid: true, highlight: "Marketing copy & content at scale" },
+      { category: "Marketing & Fashion", name: "AdCreative.ai", url: "https://adcreative.ai", company: "AdCreative", free: true, paid: true, highlight: "AI-generated ad creatives that convert" },
+      { category: "Marketing & Fashion", name: "Vue.ai", url: "https://vue.ai", company: "Vue.ai", free: false, paid: true, highlight: "AI styling, product tagging & personalization for fashion retail" },
+      { category: "Marketing & Fashion", name: "Heuritech", url: "https://heuritech.com", company: "Heuritech", free: false, paid: true, highlight: "Fashion trend forecasting using social media AI analysis" },
+      { category: "Marketing & Fashion", name: "Stylitics", url: "https://stylitics.com", company: "Stylitics", free: false, paid: true, highlight: "AI-powered outfit and product bundling for e-commerce" },
+
+      // DATA & ANALYTICS
+      { category: "Data & Analytics", name: "Palantir", url: "https://palantir.com", company: "Palantir", free: false, paid: true, highlight: "AI-powered data analysis and decision-making for enterprises and governments" },
+      { category: "Data & Analytics", name: "Databricks", url: "https://databricks.com", company: "Databricks", free: false, paid: true, highlight: "Unified data + AI platform for building and scaling ML models" },
+      { category: "Data & Analytics", name: "Snowflake", url: "https://snowflake.com", company: "Snowflake", free: false, paid: true, highlight: "Cloud data platform with built-in AI and ML capabilities" },
+      { category: "Data & Analytics", name: "DataRobot", url: "https://datarobot.com", company: "DataRobot", free: false, paid: true, highlight: "Automated machine learning for business analysts and data teams" },
+      { category: "Data & Analytics", name: "C3.ai", url: "https://c3.ai", company: "C3.ai", free: false, paid: true, highlight: "Enterprise AI applications for predictive analytics and operations" },
+      { category: "Data & Analytics", name: "ThoughtSpot", url: "https://thoughtspot.com", company: "ThoughtSpot", free: false, paid: true, highlight: "AI-powered search and analytics — ask your data questions in plain English" },
+      { category: "Data & Analytics", name: "Alteryx", url: "https://alteryx.com", company: "Alteryx", free: false, paid: true, highlight: "No-code data prep, blending, and predictive analytics automation" },
+
+      { category: "Gaming", name: "Inworld AI", url: "https://inworld.ai", company: "Inworld", free: true, paid: true, highlight: "AI-powered NPCs with memory, personality, and dynamic dialogue" },
+      { category: "Gaming", name: "Nvidia ACE", url: "https://nvidia.com/en-us/geforce/news/nvidia-ace-for-games", company: "Nvidia", free: false, paid: true, highlight: "Real-time AI speech and animation for game characters" },
+      { category: "Gaming", name: "Scenario", url: "https://scenario.com", company: "Scenario", free: true, paid: true, highlight: "AI game asset generation — characters, environments, textures" },
+      { category: "Gaming", name: "Ludo.ai", url: "https://ludo.ai", company: "Ludo", free: true, paid: true, highlight: "Game ideation, market research, and concept art generation" },
+      { category: "Gaming", name: "Modl.ai", url: "https://modl.ai", company: "Modl", free: false, paid: true, highlight: "AI playtesting and automated QA for game studios" },
+
+      { category: "Healthcare & Science", name: "AlphaFold", url: "https://deepmind.google/technologies/alphafold", company: "Google DeepMind", free: true, paid: false, highlight: "Predicts protein structures — transformed biology and drug discovery" },
+      { category: "Healthcare & Science", name: "Tempus", url: "https://tempus.com", company: "Tempus", free: false, paid: true, highlight: "AI-powered precision medicine and clinical data analysis" },
+      { category: "Healthcare & Science", name: "PathAI", url: "https://pathai.com", company: "PathAI", free: false, paid: true, highlight: "AI pathology — reads tissue samples to detect cancer" },
+      { category: "Healthcare & Science", name: "Nabla", url: "https://nabla.com", company: "Nabla", free: false, paid: true, highlight: "AI clinical documentation — real-time visit notes from conversation" },
+      { category: "Healthcare & Science", name: "Recursion", url: "https://recursion.com", company: "Recursion", free: false, paid: true, highlight: "AI-driven drug discovery using biological imaging at scale" },
+      { category: "Healthcare & Science", name: "Suki AI", url: "https://suki.ai", company: "Suki", free: false, paid: true, highlight: "Voice-powered AI assistant for clinical documentation" },
+
+      { category: "Autonomous Systems", name: "Waymo", url: "https://waymo.com", company: "Alphabet", free: false, paid: true, highlight: "Fully autonomous robotaxi service operating in multiple US cities" },
+      { category: "Autonomous Systems", name: "Tesla Autopilot", url: "https://tesla.com/autopilot", company: "Tesla", free: false, paid: true, highlight: "Full self-driving AI built into Tesla vehicles" },
+      { category: "Autonomous Systems", name: "Figure", url: "https://figure.ai", company: "Figure AI", free: false, paid: true, highlight: "General-purpose humanoid robot powered by AI" },
+      { category: "Autonomous Systems", name: "Boston Dynamics", url: "https://bostondynamics.com", company: "Boston Dynamics", free: false, paid: true, highlight: "Advanced robotic platforms for industrial and commercial use" },
+      { category: "Autonomous Systems", name: "Shield AI", url: "https://shield.ai", company: "Shield AI", free: false, paid: true, highlight: "AI pilot for autonomous military and defense drones" },
+
+      { category: "Search & Discovery", name: "Perplexity", url: "https://perplexity.ai", company: "Perplexity AI", free: true, paid: true, highlight: "AI search engine with cited, real-time answers" },
+      { category: "Search & Discovery", name: "Google AI Overviews", url: "https://google.com", company: "Google", free: true, paid: false, highlight: "AI-generated summaries at the top of Google search results" },
+      { category: "Search & Discovery", name: "You.com", url: "https://you.com", company: "You.com", free: true, paid: true, highlight: "Customizable AI search with apps and modes" },
+      { category: "Search & Discovery", name: "Exa", url: "https://exa.ai", company: "Exa", free: false, paid: true, highlight: "Semantic web search API built for AI applications" },
+      { category: "Search & Discovery", name: "Bing AI", url: "https://bing.com", company: "Microsoft", free: true, paid: false, highlight: "GPT-4 powered search built into Bing" },
+
+      { category: "Security & Fraud", name: "Darktrace", url: "https://darktrace.com", company: "Darktrace", free: false, paid: true, highlight: "Self-learning AI that detects and responds to cyber threats in real time" },
+      { category: "Security & Fraud", name: "CrowdStrike", url: "https://crowdstrike.com", company: "CrowdStrike", free: false, paid: true, highlight: "AI-native endpoint protection and threat intelligence" },
+      { category: "Security & Fraud", name: "SentinelOne", url: "https://sentinelone.com", company: "SentinelOne", free: false, paid: true, highlight: "Autonomous AI-powered cybersecurity platform" },
+      { category: "Security & Fraud", name: "Sift", url: "https://sift.com", company: "Sift", free: false, paid: true, highlight: "AI fraud detection for payments and account takeover" },
+      { category: "Security & Fraud", name: "Socure", url: "https://socure.com", company: "Socure", free: false, paid: true, highlight: "AI identity verification and fraud prevention at account opening" },
+
+      { category: "Translation", name: "DeepL", url: "https://deepl.com", company: "DeepL", free: true, paid: true, highlight: "Highest-quality AI translation — preferred by professionals" },
+      { category: "Translation", name: "Google Translate", url: "https://translate.google.com", company: "Google", free: true, paid: false, highlight: "Instant translation across 130+ languages" },
+      { category: "Translation", name: "Whisper", url: "https://openai.com/research/whisper", company: "OpenAI", free: true, paid: false, highlight: "Open-source speech recognition and transcription across languages" },
+      { category: "Translation", name: "Translated", url: "https://translated.com", company: "Translated", free: false, paid: true, highlight: "AI-assisted human translation for enterprise localization" },
+      { category: "Translation", name: "Eternity", url: "https://www.eternity.giving", company: "Eternity", free: false, paid: true, highlight: "AI-powered memorial and legacy preservation across languages" },
+    ];
+
+    const categoryMeta = {
+      "Text & Chat":   { icon: "💬", color: "#6C63FF", light: "#F0EEFF" },
+      "Image":         { icon: "🎨", color: "#F59E0B", light: "#FFFBEB" },
+      "Video":         { icon: "🎬", color: "#EF4444", light: "#FFF1F1" },
+      "Audio & Music": { icon: "🎵", color: "#10B981", light: "#ECFDF5" },
+      "Coding":        { icon: "💻", color: "#3B82F6", light: "#EFF6FF" },
+      "Productivity":  { icon: "⚡", color: "#8B5CF6", light: "#F5F3FF" },
+      "Education":     { icon: "🎓", color: "#0891B2", light: "#ECFEFF" },
+      "Finance":       { icon: "🏦", color: "#0EA5E9", light: "#F0F9FF" },
+      "Legal":         { icon: "⚖️", color: "#64748B", light: "#F8FAFC" },
+      "Marketing & Fashion": { icon: "👗", color: "#F97316", light: "#FFF7ED" },
+      "Data & Analytics": { icon: "📊", color: "#14B8A6", light: "#F0FDFA" },
+      "Gaming":            { icon: "🎮", color: "#7C3AED", light: "#F5F3FF" },
+      "Healthcare & Science": { icon: "🏥", color: "#059669", light: "#ECFDF5" },
+      "Autonomous Systems": { icon: "🚗", color: "#DC2626", light: "#FFF1F1" },
+      "Search & Discovery": { icon: "🔍", color: "#2563EB", light: "#EFF6FF" },
+      "Security & Fraud":  { icon: "🛡️", color: "#475569", light: "#F8FAFC" },
+      "Translation":       { icon: "🌍", color: "#16A34A", light: "#F0FDF4" },
+    };
+
+    const categories = Object.keys(categoryMeta);
+
+    function App() {
+      const [activeCategory, setActiveCategory] = useState("All");
+      const [search, setSearch] = useState("");
+
+      const filtered = platforms.filter(p => {
+        const matchCat = activeCategory === "All" || p.category === activeCategory;
+        const matchSearch = search === "" ||
+          p.name.toLowerCase().includes(search.toLowerCase()) ||
+          p.company.toLowerCase().includes(search.toLowerCase()) ||
+          p.highlight.toLowerCase().includes(search.toLowerCase());
+        return matchCat && matchSearch;
+      });
+
+      const grouped = categories.reduce((acc, cat) => {
+        const items = filtered.filter(p => p.category === cat);
+        if (items.length) acc[cat] = items;
+        return acc;
+      }, {});
+
+      return (
+        <div style={{ fontFamily: "Georgia, 'Times New Roman', serif", background: "#0F0F1A", minHeight: "100vh", color: "#E8E8F0", padding: "32px 24px" }}>
+          <div style={{ maxWidth: 1000, margin: "0 auto" }}>
+
+            {/* Header */}
+            <div style={{ marginBottom: 6 }}>
+              <span style={{ fontSize: 11, letterSpacing: 4, color: "#6C63FF", textTransform: "uppercase", fontFamily: "monospace" }}>
+                Reference Guide
+              </span>
+            </div>
+            <h1 style={{ margin: "0 0 6px", fontSize: "clamp(26px, 4vw, 40px)", fontWeight: "normal", letterSpacing: -1, color: "#FFFFFF" }}>
+              Major AI Platforms across 17 Industries
+            </h1>
+            <p style={{ margin: "0 0 4px", color: "#7777AA", fontSize: 14, fontStyle: "italic" }}>
+              As of May 2026, the landscape is changing daily
+            </p>
+            <p style={{ margin: "0 0 28px", color: "#555577", fontSize: 12, fontStyle: "italic" }}>
+              Not an exhaustive list
+            </p>
+
+            {/* Search */}
+            <div style={{ position: "relative", marginBottom: 20 }}>
+              <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", fontSize: 15 }}>🔍</span>
+              <input
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="Search platforms, companies, or use cases..."
+                style={{ width: "100%", padding: "11px 16px 11px 42px", background: "#1A1A2E", border: "1px solid #2D2D4E", borderRadius: 10, color: "#E8E8F0", fontSize: 14, fontFamily: "inherit" }}
+              />
+            </div>
+
+            {/* Category filters */}
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 28 }}>
+              {["All", ...categories].map(cat => {
+                const isActive = activeCategory === cat;
+                const meta = categoryMeta[cat];
+                return (
+                  <button key={cat} className="pill-btn"
+                    onClick={() => setActiveCategory(cat)}
+                    style={{ padding: "7px 16px", borderRadius: 20, fontSize: 13, background: isActive ? (meta ? meta.color : "#6C63FF") : "#1A1A2E", color: isActive ? "#fff" : "#9999BB", border: `1px solid ${isActive ? "transparent" : "#2D2D4E"}`, fontWeight: isActive ? 600 : 400 }}>
+                    {meta ? `${meta.icon} ${cat}` : "✦ All"}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div style={{ fontSize: 11, color: "#55557A", marginBottom: 16, fontFamily: "monospace" }}>
+              Showing {filtered.length} of {platforms.length} platforms
+            </div>
+
+            {/* Tables */}
+            {Object.entries(grouped).map(([cat, items]) => {
+              const meta = categoryMeta[cat];
+              return (
+                <div key={cat} style={{ marginBottom: 36 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+                    <span style={{ fontSize: 20 }}>{meta.icon}</span>
+                    <h2 style={{ margin: 0, fontSize: 17, fontWeight: 600, color: meta.color, letterSpacing: 0.5 }}>{cat}</h2>
+                    <div style={{ flex: 1, height: 1, background: `linear-gradient(to right, ${meta.color}44, transparent)` }} />
+                    <span style={{ fontSize: 11, color: "#55557A", fontFamily: "monospace" }}>{items.length} platforms</span>
+                  </div>
+
+                  <div style={{ borderRadius: 10, overflow: "hidden", border: "1px solid #2D2D4E" }}>
+                    {/* Column headers */}
+                    <div className="table-grid" style={{ display: "grid", gridTemplateColumns: "1.4fr 1.2fr 2.6fr 0.5fr 0.5fr", background: "#13132A", padding: "9px 16px", borderBottom: "1px solid #2D2D4E", fontSize: 10, letterSpacing: 2, textTransform: "uppercase", color: "#55557A", fontFamily: "monospace", gap: 12 }}>
+                      <div>Platform</div>
+                      <div>Company</div>
+                      <div>Best For</div>
+                      <div style={{ textAlign: "center" }}>Free</div>
+                      <div style={{ textAlign: "center" }}>Paid</div>
+                    </div>
+
+                    {items.map((p, i) => (
+                      <div key={p.name} className="row-hover table-grid" style={{ display: "grid", gridTemplateColumns: "1.4fr 1.2fr 2.6fr 0.5fr 0.5fr", padding: "11px 16px", gap: 12, alignItems: "center", background: i % 2 === 0 ? "#0F0F1A" : "#111122", borderBottom: i < items.length - 1 ? "1px solid #1E1E35" : "none", transition: "background 0.15s" }}>
+                        <div style={{ fontWeight: 600, fontSize: 14 }}>
+                          {p.url ? <a href={p.url} target="_blank" rel="noopener noreferrer" style={{ color: "#FFFFFF", textDecoration: "none", borderBottom: "1px solid rgba(255,255,255,0.3)" }}>{p.name}</a> : <span style={{ color: "#FFFFFF" }}>{p.name}</span>}
+                        </div>
+                        <div style={{ fontSize: 13, color: "#8888AA" }}>{p.company}</div>
+                        <div style={{ fontSize: 13, color: "#AAAACC", lineHeight: 1.4 }}>{p.highlight}</div>
+                        <div style={{ textAlign: "center", fontSize: 15, color: p.free ? "#10B981" : "#444466" }}>{p.free ? "✓" : "—"}</div>
+                        <div style={{ textAlign: "center", fontSize: 15, color: p.paid ? "#6C63FF" : "#444466" }}>{p.paid ? "✓" : "—"}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+
+            {filtered.length === 0 && (
+              <div style={{ textAlign: "center", padding: "60px 0", color: "#55557A", fontSize: 16 }}>
+                No platforms match your search.
+              </div>
+            )}
+
+            <div style={{ marginTop: 40, paddingTop: 20, borderTop: "1px solid #2D2D4E", textAlign: "center", fontSize: 12, color: "#44445A", fontStyle: "italic" }}>
+              The AI landscape changes weekly. This covers the most widely used platforms as of May 2026.
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>
